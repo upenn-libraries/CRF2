@@ -4,8 +4,8 @@ A site that manages the creation of SRS courses in Penn's Canvas instance. Built
 
 For more information, see the [wiki](https://github.com/Mfhodges/CRF2/wiki).
 
-Production instance: [http://reqform01.library.upenn.int/](http://reqform01.library.upenn.int/)
-Development instance: [http://reqform01.library.upenn.int/](http://reqform-dev.library.upenn.int/)
+Production instance: [http://reqform01.library.upenn.int/](http://reqform01.library.upenn.int/)  
+Development instance: [http://reqform01.library.upenn.int/](http://reqform-dev.library.upenn.int/)  
 Server configuration: [https://gitlab.library.upenn.edu/course-request/crf2_config](https://gitlab.library.upenn.edu/course-request/crf2_config)
 
 ## Development installation
@@ -62,7 +62,7 @@ To run the application the first time:
 1. `python manage.py migrate` (you may also need to run `python manage.py makemigrations` -- you will be prompted if so)
 2. `python manage.py runserver`
 
-To log in as an admin: [http://localhost:8000/admin/](http://localhost:8000/admin/)
+To log in as an admin: [http://localhost:8000/admin/](http://localhost:8000/admin/)  
 To log in as a user: [http://localhost:8000/accounts/login/](http://localhost:8000/accounts/login/)
 
 For testing in a project-specific interactive shell, use `python manage.py shell_plus`.
