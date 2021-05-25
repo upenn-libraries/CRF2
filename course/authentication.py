@@ -1,4 +1,3 @@
-
 from django.contrib.auth.models import User
 from course import utils
 
@@ -13,7 +12,7 @@ doesnt require backend changes: https://stackoverflow.com/a/40894635/10969047
 """
 
 
-class SSOLogin():
+class SSOLogin:
     def authenticate(self, username=None, password=None):
         try:
             user = User.objects.get(email=username)

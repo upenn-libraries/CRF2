@@ -1,4 +1,3 @@
-
 from rest_framework import generics, permissions
 from django.contrib.auth.models import User
 
@@ -14,5 +13,5 @@ def user_permissons(request):
     value = request.user.is_staff
 
     return {
-        'staff': value,
+        "staff": value,
     }

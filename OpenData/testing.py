@@ -1,7 +1,4 @@
-
-
 # https://esb.isc-seo.upenn.edu/8091/open_data/course_info/
-
 
 
 # https://esb.isc-seo.upenn.edu/8091/open_data/course_section_search_parameters/
@@ -13,20 +10,18 @@ import time
 import requests
 from configparser import ConfigParser
 import pprint as pp
+
 # here are most of the basic API requests that should support the CRF
 
 config = ConfigParser()
-config.read('../config/config.ini')
-domain = config.get('opendata', 'domain')
-id = config.get('opendata', 'id')
+config.read("../config/config.ini")
+domain = config.get("opendata", "domain")
+id = config.get("opendata", "id")
 
-key = config.get('opendata', 'key')
-headers = {
-    'Authorization-Bearer' : id,
-    'Authorization-Token':key
-}
+key = config.get("opendata", "key")
+headers = {"Authorization-Bearer": id, "Authorization-Token": key}
 
-#course_info/ACCT/
+# course_info/ACCT/
 """
 url = domain + 'course_section_search_parameters/'
 print(url)
@@ -49,12 +44,14 @@ pp.pprint(response.headers)
 r_json = response.json()
 #pp.pprint(r_json)
 """
+
+
 def main():
     schools = {}
-    with open('OpenData.txt') as json_file:
+    with open("OpenData.txt") as json_file:
         data = json.load(json_file)
-        print("data['departments']",len(data['departments'].keys()))
-        #for dept in data['departments']:
+        print("data['departments']", len(data["departments"].keys()))
+        # for dept in data['departments']:
         """
             print('Dept: ' + dept)
             url = '%scourse_info/%s/' % (domain,dept) # gives u the course code
@@ -79,37 +76,209 @@ def main():
             #print(schools[school_code])
         """
 
-    print(data['departments'].keys())
+    print(data["departments"].keys())
 
-    schools = {'AS': ['AAMW', 'AFRC', 'AFST', 'ALAN', 'AMCS', 'ANCH', 'ANEL', 'ANTH', 'APOP', 'ARAB', 'ARTH', 'ASAM', 'ASTR', 'BCHE', 'BDS', 'BENF', 'BENG', 'BIBB', 'BIOL', 'CHEM', 'CHIN', 'CIMS', 'CLCH', 'CLST', 'COGS', 'COML', 'CRIM', 'CRWR', 'DATA', 'DEMG', 'DTCH', 'DYNM', 'EALC', 'ECON', 'EEUR', 'ENGL', 'ENVS', 'FOLK', 'FREN', 'GAFL', 'GAS', 'GEOL', 'GLBS', 'GREK', 'GRMN', 'GSWS', 'GUJR', 'HEBR', 'HIND', 'HIST', 'HSOC', 'HSSC', 'ICOM', 'IMPA', 'INTR', 'ITAL', 'JPAN', 'JWST', 'KORN', 'LALS', 'LATN', 'LEAD', 'LGIC', 'LING', 'MATH', 'MCS', 'MLA', 'MLYM', 'MMP', 'MODM', 'MTHS', 'MUSC', 'NELC', 'NEUR', 'ORGC', 'PERS', 'PHIL', 'PHYS', 'PPE', 'PROW', 'PRTG', 'PSCI', 'PSYC', 'PUNJ', 'QUEC', 'RELC', 'RELS', 'ROML', 'RUSS', 'SAST', 'SCND', 'SKRT', 'SLAV', 'SOCI', 'SPAN', 'SPRO', 'STSC', 'TAML', 'TELU', 'THAR', 'TURK', 'URBS', 'URDU', 'VIPR', 'VLST', 'WRIT', 'YDSH'], 'WH': ['ACCT', 'BEPP', 'FNCE', 'HCMG', 'INTS', 'LGST', 'LSMP', 'MGEC', 'MGMT', 'MKTG', 'OIDD', 'REAL', 'STAT', 'WH', 'WHCP'], 'MD': ['ANAT', 'BIOE', 'BIOM', 'BMB', 'BMIN', 'BSTA', 'CAMB', 'EPID', 'GCB', 'HCIN', 'HPR', 'IMUN', 'MED', 'MPHY', 'MTR', 'NGG', 'PHRM', 'PUBH', 'REG'], 'FA': ['ARCH', 'CPLN', 'ENMG', 'FNAR', 'HSPV', 'LARP', 'MUSA'], 'EG': ['BE', 'BIOT', 'CBE', 'CIS', 'CIT', 'DATS', 'EAS', 'ENGR', 'ENM', 'ESE', 'IPD', 'MEAM', 'MSE', 'NANO', 'NETS'], 'AN': ['COMM'], 'DM': ['DADE', 'DCOH', 'DEND', 'DENT', 'DOMD', 'DORT', 'DOSP', 'DPED', 'DRST'], 'ED': ['EDUC'], 'PV': ['INTL', 'MSCI', 'NSCI'], 'LW': ['LAW', 'LAWM'], 'SW': ['MSSP', 'NPLD', 'SWRK'], 'NU': ['NURS'], 'VM': ['VBMS', 'VCSN', 'VCSP', 'VISR', 'VMED', 'VPTH']}
+    schools = {
+        "AS": [
+            "AAMW",
+            "AFRC",
+            "AFST",
+            "ALAN",
+            "AMCS",
+            "ANCH",
+            "ANEL",
+            "ANTH",
+            "APOP",
+            "ARAB",
+            "ARTH",
+            "ASAM",
+            "ASTR",
+            "BCHE",
+            "BDS",
+            "BENF",
+            "BENG",
+            "BIBB",
+            "BIOL",
+            "CHEM",
+            "CHIN",
+            "CIMS",
+            "CLCH",
+            "CLST",
+            "COGS",
+            "COML",
+            "CRIM",
+            "CRWR",
+            "DATA",
+            "DEMG",
+            "DTCH",
+            "DYNM",
+            "EALC",
+            "ECON",
+            "EEUR",
+            "ENGL",
+            "ENVS",
+            "FOLK",
+            "FREN",
+            "GAFL",
+            "GAS",
+            "GEOL",
+            "GLBS",
+            "GREK",
+            "GRMN",
+            "GSWS",
+            "GUJR",
+            "HEBR",
+            "HIND",
+            "HIST",
+            "HSOC",
+            "HSSC",
+            "ICOM",
+            "IMPA",
+            "INTR",
+            "ITAL",
+            "JPAN",
+            "JWST",
+            "KORN",
+            "LALS",
+            "LATN",
+            "LEAD",
+            "LGIC",
+            "LING",
+            "MATH",
+            "MCS",
+            "MLA",
+            "MLYM",
+            "MMP",
+            "MODM",
+            "MTHS",
+            "MUSC",
+            "NELC",
+            "NEUR",
+            "ORGC",
+            "PERS",
+            "PHIL",
+            "PHYS",
+            "PPE",
+            "PROW",
+            "PRTG",
+            "PSCI",
+            "PSYC",
+            "PUNJ",
+            "QUEC",
+            "RELC",
+            "RELS",
+            "ROML",
+            "RUSS",
+            "SAST",
+            "SCND",
+            "SKRT",
+            "SLAV",
+            "SOCI",
+            "SPAN",
+            "SPRO",
+            "STSC",
+            "TAML",
+            "TELU",
+            "THAR",
+            "TURK",
+            "URBS",
+            "URDU",
+            "VIPR",
+            "VLST",
+            "WRIT",
+            "YDSH",
+        ],
+        "WH": [
+            "ACCT",
+            "BEPP",
+            "FNCE",
+            "HCMG",
+            "INTS",
+            "LGST",
+            "LSMP",
+            "MGEC",
+            "MGMT",
+            "MKTG",
+            "OIDD",
+            "REAL",
+            "STAT",
+            "WH",
+            "WHCP",
+        ],
+        "MD": [
+            "ANAT",
+            "BIOE",
+            "BIOM",
+            "BMB",
+            "BMIN",
+            "BSTA",
+            "CAMB",
+            "EPID",
+            "GCB",
+            "HCIN",
+            "HPR",
+            "IMUN",
+            "MED",
+            "MPHY",
+            "MTR",
+            "NGG",
+            "PHRM",
+            "PUBH",
+            "REG",
+        ],
+        "FA": ["ARCH", "CPLN", "ENMG", "FNAR", "HSPV", "LARP", "MUSA"],
+        "EG": [
+            "BE",
+            "BIOT",
+            "CBE",
+            "CIS",
+            "CIT",
+            "DATS",
+            "EAS",
+            "ENGR",
+            "ENM",
+            "ESE",
+            "IPD",
+            "MEAM",
+            "MSE",
+            "NANO",
+            "NETS",
+        ],
+        "AN": ["COMM"],
+        "DM": ["DADE", "DCOH", "DEND", "DENT", "DOMD", "DORT", "DOSP", "DPED", "DRST"],
+        "ED": ["EDUC"],
+        "PV": ["INTL", "MSCI", "NSCI"],
+        "LW": ["LAW", "LAWM"],
+        "SW": ["MSSP", "NPLD", "SWRK"],
+        "NU": ["NURS"],
+        "VM": ["VBMS", "VCSN", "VCSP", "VISR", "VMED", "VPTH"],
+    }
     subj_list = []
     for school in schools:
         subj_list += schools[school]
-    print(data['departments'].keys())
+    print(data["departments"].keys())
     print(subj_list)
 
-
-    for x in data['departments'].keys() :
+    for x in data["departments"].keys():
         if x not in subj_list:
             print(x, " not in subj list")
 
-
     num_dept = len(subj_list)
-    print("num_dept",num_dept)
-    #pp.pprint(schools.values())
+    print("num_dept", num_dept)
+    # pp.pprint(schools.values())
 
 
-
-url = domain+'course_section_search'
-params = {'term': '2019B','course_id':'CIS','course_level_at_or_above':'200', 'page_number':2,'number_of_results_per_page':'100'}
-response = requests.get(url, headers=headers,params=params)
+url = domain + "course_section_search"
+params = {
+    "term": "2019B",
+    "course_id": "CIS",
+    "course_level_at_or_above": "200",
+    "page_number": 2,
+    "number_of_results_per_page": "100",
+}
+response = requests.get(url, headers=headers, params=params)
 pp.pprint(response.json())
-print(response.links,response.url)
-
-
-
-
-
+print(response.links, response.url)
 
 
 """

@@ -2,7 +2,6 @@ from django import template
 from django.contrib import messages
 
 
-
 from rest_framework.utils.urls import remove_query_param
 from django.utils.encoding import iri_to_uri
 from django.utils.html import escape
@@ -10,6 +9,7 @@ from django.contrib.auth.models import User
 from course.models import *
 
 register = template.Library()
+
 
 @register.simple_tag
 def delete_query_param(request, key):
@@ -23,21 +23,21 @@ def delete_query_param(request, key):
     return escape(val)
 
 
-
 @register.simple_tag
 def get_item(qp, key):
     # qp is request.query_params
-    #print("qp", qp)
-    #print("key, val", (key , val))
+    # print("qp", qp)
+    # print("key, val", (key , val))
     if val == None:
         return ""
     else:
         return val
 
+
 @register.simple_tag
 def get_user(user):
     # qp is request.query_params
-    #print(user)
+    # print(user)
     try:
         user = User.objects.get(username=user)
     except User.DoesNotExist:
@@ -45,59 +45,71 @@ def get_user(user):
     else:
         return user
 
+
 @register.simple_tag
 def masquerading(request):
-    if request.session['on_behalf_of']:
+    if request.session["on_behalf_of"]:
         return True
     return False
+
 
 @register.simple_tag
 def filter_messages(messages, type):
     answer = []
     if messages:
-        #print("u",messages)
+        # print("u",messages)
         for message in messages:
             if message.tags == type:
-                #print(message.tags)
+                # print(message.tags)
                 answer += [message]
     return answer
 
+
 @register.filter
 def coursecodetoString(coursecode):
-    middle= coursecode[:-5][4:]
-    return("%s-%s-%s %s" % (coursecode[:-11], middle[:3],middle[3:], coursecode[-5:] ))
+    middle = coursecode[:-5][4:]
+    return "%s-%s-%s %s" % (coursecode[:-11], middle[:3], middle[3:], coursecode[-5:])
 
 
 @register.filter
 def asrepr(course):
-    term = course['year'] + course['course_term']
-    #print(course['course_section'])
+    term = course["year"] + course["course_term"]
+    # print(course['course_section'])
 
-    return("%s-%s-%s %s" % (course['course_subject'], course['course_number'],course['course_section'], term ))
-    #-".join([])
+    return "%s-%s-%s %s" % (
+        course["course_subject"],
+        course["course_number"],
+        course["course_section"],
+        term,
+    )
+    # -".join([])
+
 
 @register.simple_tag
 def get_markdown(location):
     if PageContent.objects.filter(location=location).exists():
         page = PageContent.objects.get(location=location)
         return page.get_page_as_markdown()
-    return ''
+    return ""
+
 
 @register.simple_tag
 def get_markdown_id(location):
     if PageContent.objects.filter(location=location).exists():
         page = PageContent.objects.get(location=location)
         return page.pk
-    return ''
+    return ""
+
 
 @register.filter("mytruncate_chars")
 def truncate_chars(value, max_length):
     if len(value) > max_length:
         truncd_val = value[:max_length]
-        if not len(value) == max_length+1 and value[max_length+1] != " ":
-            truncd_val = truncd_val[:truncd_val.rfind(" ")]
-        return  truncd_val
+        if not len(value) == max_length + 1 and value[max_length + 1] != " ":
+            truncd_val = truncd_val[: truncd_val.rfind(" ")]
+        return truncd_val
     return value
+
 
 """
 @register.simple_tag
