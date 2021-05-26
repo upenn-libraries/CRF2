@@ -1,13 +1,16 @@
 # myscript.py
 from __future__ import print_function
-import cx_Oracle
-from configparser import ConfigParser
-import string
+
 import logging
-from course import utils
 import re
-from OpenData.library import *
+import string
+from configparser import ConfigParser
+
+import cx_Oracle
+
+from course import utils
 from course.models import *
+from OpenData.library import *
 
 
 ######

@@ -1,11 +1,11 @@
-import json
-import re
-import requests
-
 import csv
+import json
 import random
+import re
 import time
 from configparser import ConfigParser
+
+import requests
 from sample_data import *
 
 """

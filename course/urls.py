@@ -1,19 +1,16 @@
+from django.conf import settings
 from django.conf.urls import include, url
 from django.contrib.auth import views as auth_views
 from django.urls import path
-from rest_framework.routers import DefaultRouter
-from course import views
-from rest_framework_swagger.views import get_swagger_view
-from rest_framework import renderers
 from django.views.generic.base import TemplateView
+from rest_framework import renderers
+from rest_framework.routers import DefaultRouter
+from rest_framework_swagger.views import get_swagger_view
 
+from course import views
 # from rest_framework.schemas import get_schema_view # new
-from course.autocomplete import (
-    UserAutocomplete,
-    SubjectAutocomplete,
-    CanvasSiteAutocomplete,
-)
-from django.conf import settings
+from course.autocomplete import (CanvasSiteAutocomplete, SubjectAutocomplete,
+                                 UserAutocomplete)
 
 schema_view = get_swagger_view(title="Pastebin API")
 

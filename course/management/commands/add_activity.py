@@ -1,9 +1,11 @@
+from configparser import ConfigParser
+
+import cx_Oracle
 from django.contrib.auth.models import User
-from course.models import *
 from django.core.management.base import BaseCommand
 from django.utils.crypto import get_random_string
-from configparser import ConfigParser
-import cx_Oracle
+
+from course.models import *
 from OpenData.library import *
 
 config = ConfigParser()

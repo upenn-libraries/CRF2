@@ -1,9 +1,9 @@
 import json
 import re
 import time
-import requests
 from configparser import ConfigParser
 
+import requests
 
 """
 config = ConfigParser()

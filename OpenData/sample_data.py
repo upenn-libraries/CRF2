@@ -1,8 +1,5 @@
 import random
 
-
-import random
-
 titles = [
     "What [Keyword] Can Teach You About [Alternate keyword]",
     "[Number] Crucial Tactics for [Keyword]",

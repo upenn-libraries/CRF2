@@ -2,9 +2,9 @@ import datetime
 import os
 import sys
 from configparser import ConfigParser
+
 from canvasapi import Canvas
 from canvasapi.exceptions import CanvasException
-
 
 config = ConfigParser()
 config.read("config/config.ini")

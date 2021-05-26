@@ -2,14 +2,16 @@
 # 1. a .txt file of SIS IDs for courses in a given term that are not requested in the CRF yet
 # 2. a .txt file of SIS IDs from the file in 1. but check if SIS ID in use in Canvas
 
+import os
+import sys
+from configparser import ConfigParser
+
 from canvasapi import Canvas
 from canvasapi.exceptions import CanvasException
+
 from course.models import *
-from .logger import canvas_logger
-from .logger import crf_logger
-import sys
-import os
-from configparser import ConfigParser
+
+from .logger import canvas_logger, crf_logger
 
 # here are most of the basic API requests that should support the CRF
 

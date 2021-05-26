@@ -1,7 +1,8 @@
 from __future__ import absolute_import, unicode_literals
+
+from django.contrib import messages
 from django.contrib.auth.signals import user_logged_in, user_logged_out
 from django.dispatch import receiver
-from django.contrib import messages
 
 # default_app_config = '.apps.CourseAppConfig'
 

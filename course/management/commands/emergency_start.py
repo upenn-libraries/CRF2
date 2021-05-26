@@ -1,7 +1,9 @@
-from course.models import School
+from configparser import ConfigParser
+
 from django.core.management.base import BaseCommand
 from django.utils.crypto import get_random_string
-from configparser import ConfigParser
+
+from course.models import School
 
 ## FINISH THIS
 

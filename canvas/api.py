@@ -1,7 +1,8 @@
 import json
 import re
-import requests
 from configparser import ConfigParser
+
+import requests
 
 # here are most of the basic API requests that should support the CRF
 
@@ -14,9 +15,9 @@ headers = {"Authorization": "Bearer %s" % (key)}
 
 # Import the Canvas class
 from canvasapi import Canvas
-from canvasapi.tab import Tab
 from canvasapi.enrollment_term import EnrollmentTerm
 from canvasapi.exceptions import CanvasException
+from canvasapi.tab import Tab
 
 # Canvas API URL
 API_URL = domain

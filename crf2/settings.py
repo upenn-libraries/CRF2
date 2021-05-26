@@ -12,8 +12,8 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 
 import os
 from configparser import ConfigParser
-import django_heroku
 
+import django_heroku
 
 config = ConfigParser()
 config.read("config/config.ini")

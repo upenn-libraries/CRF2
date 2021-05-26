@@ -1,6 +1,9 @@
 ## this needs to be EDITED!!! this is only a rough draft
 
-import sys, csv, json
+import csv
+import json
+import sys
+
 import requests
 
 cache_filename = "./course_copy_cache.json"

@@ -1,10 +1,13 @@
 from __future__ import print_function
+
+import logging
+from configparser import ConfigParser
+
+import cx_Oracle
+
+from canvas import api as canvas_api
 from course.models import *
 from datawarehouse.datawarehouse import *
-from canvas import api as canvas_api
-import cx_Oracle
-from configparser import ConfigParser
-import logging
 
 LOG_FILENAME = "users.log"
 logging.basicConfig(

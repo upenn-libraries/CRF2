@@ -5,11 +5,12 @@
 
 
 import json
+import pprint as pp
 import re
 import time
-import requests
 from configparser import ConfigParser
-import pprint as pp
+
+import requests
 
 # here are most of the basic API requests that should support the CRF
 

@@ -1,25 +1,14 @@
-from django.contrib import admin
-from .models import *
 from admin_auto_filters.filters import AutocompleteFilter
+from django.conf import settings
+from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
-from django.conf import settings
-from django.db.models import (
-    Count,
-    Sum,
-    Min,
-    Max,
-    Exists,
-    DateTimeField,
-    OuterRef,
-    Case,
-    When,
-    IntegerField,
-    F,
-    Value,
-    Subquery,
-)
+from django.db.models import (Case, Count, DateTimeField, Exists, F,
+                              IntegerField, Max, Min, OuterRef, Subquery, Sum,
+                              Value, When)
 from django.db.models.functions import Trunc
+
+from .models import *
 
 """
 can implement EXACT search by instructor username, course code, or course title

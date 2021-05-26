@@ -1,13 +1,15 @@
-from rest_framework import serializers
-from course.models import *
-from django.contrib.auth.models import User
-import datetime
-from django.contrib import messages
-from canvas import api
 import collections
-from django.db.models import Q
-from course.utils import *
+import datetime
 from copy import deepcopy
+
+from django.contrib import messages
+from django.contrib.auth.models import User
+from django.db.models import Q
+from rest_framework import serializers
+
+from canvas import api
+from course.models import *
+from course.utils import *
 
 # Serializer Classes provide a way of serializing and deserializing
 # the model instances into representations such as json. We can do this

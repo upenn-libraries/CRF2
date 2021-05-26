@@ -1,14 +1,17 @@
 # myscript.py
 from __future__ import print_function
-import cx_Oracle
-from configparser import ConfigParser
-import string
+
 import logging
-from course import utils
 import re
-from OpenData.library import *
-from course.models import *
+import string
+from configparser import ConfigParser
 from datetime import datetime
+
+import cx_Oracle
+
+from course import utils
+from course.models import *
+from OpenData.library import *
 
 
 def roman_title(title):

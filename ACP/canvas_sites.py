@@ -6,18 +6,20 @@
 ## ONLY RUN THIS FROM home/crf2/ in $ python3 manage.py shell
 ## file = the 2nd file created in create_course_list that contains sis ids of courses that haven't been created yet.
 
-from canvasapi import Canvas
-from canvasapi.exceptions import CanvasException
-from course.models import *
-from datawarehouse import datawarehouse
 import datetime
 import os
-from .logger import canvas_logger
-from .logger import crf_logger
 import sys
-from course.tasks import create_canvas_site
-from .create_course_list import sis_id_status
 from configparser import ConfigParser
+
+from canvasapi import Canvas
+from canvasapi.exceptions import CanvasException
+
+from course.models import *
+from course.tasks import create_canvas_site
+from datawarehouse import datawarehouse
+
+from .create_course_list import sis_id_status
+from .logger import canvas_logger, crf_logger
 
 config = ConfigParser()
 config.read("config/config.ini")

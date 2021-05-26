@@ -1,13 +1,16 @@
 from __future__ import absolute_import, unicode_literals
-from celery import task
-from datetime import datetime
-from course import utils
-from canvas import api as canvas_api
-from course.serializers import RequestSerializer
-from course.models import *
-import time
-from datawarehouse import datawarehouse
+
 import sys
+import time
+from datetime import datetime
+
+from celery import task
+
+from canvas import api as canvas_api
+from course import utils
+from course.models import *
+from course.serializers import RequestSerializer
+from datawarehouse import datawarehouse
 
 
 @task()

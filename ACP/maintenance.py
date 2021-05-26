@@ -3,19 +3,21 @@ This code is to help do some maintence in the CRF and  in Canvas
 
 """
 
+import datetime
+import os
+import sys
+from configparser import ConfigParser
+
+import requests
+from canvasapi import Canvas
+from canvasapi.exceptions import CanvasException
+from dateutil import tz
+
 from course.models import *
 from datawarehouse import datawarehouse
 from datawarehouse.helpers import *
-import datetime
-import os
-from .logger import canvas_logger
-from .logger import crf_logger
-import sys
-from configparser import ConfigParser
-from canvasapi import Canvas
-from canvasapi.exceptions import CanvasException
-import requests
-from dateutil import tz
+
+from .logger import canvas_logger, crf_logger
 
 config = ConfigParser()
 config.read("config/config.ini")

@@ -1,12 +1,14 @@
-from course.models import *
-from django.core.management.base import BaseCommand
-from django.utils.crypto import get_random_string
-from course.utils import *
-from configparser import ConfigParser
 import json
-from OpenData.library import *
 import logging
 import sys
+from configparser import ConfigParser
+
+from django.core.management.base import BaseCommand
+from django.utils.crypto import get_random_string
+
+from course.models import *
+from course.utils import *
+from OpenData.library import *
 
 # https://realpython.com/python-logging/
 

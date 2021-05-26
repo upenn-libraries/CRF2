@@ -1,11 +1,10 @@
 from django import template
 from django.contrib import messages
-
-
-from rest_framework.utils.urls import remove_query_param
+from django.contrib.auth.models import User
 from django.utils.encoding import iri_to_uri
 from django.utils.html import escape
-from django.contrib.auth.models import User
+from rest_framework.utils.urls import remove_query_param
+
 from course.models import *
 
 register = template.Library()

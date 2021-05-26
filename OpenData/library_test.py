@@ -1,6 +1,6 @@
-from library import *
 from configparser import ConfigParser
 
+from library import *
 
 config = ConfigParser()
 config.read("../config/config.ini")

@@ -1,8 +1,5 @@
 import logging
-
-from logging import FileHandler
-from logging import Formatter
-
+from logging import FileHandler, Formatter
 
 """
 format for 

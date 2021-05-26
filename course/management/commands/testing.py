@@ -4,15 +4,17 @@
 # https://esb.isc-seo.upenn.edu/8091/open_data/course_section_search_parameters/
 
 
+import csv
 import json
+import pprint as pp
 import re
 import time
-import requests
 from configparser import ConfigParser
-import pprint as pp
-import csv
-from OpenData.library import OpenData
+
+import requests
+
 from course.models import *
+from OpenData.library import OpenData
 
 # here are most of the basic API requests that should support the CRF
 

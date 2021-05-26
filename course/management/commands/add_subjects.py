@@ -1,10 +1,12 @@
-from course.models import Subject, School
+import json
+import logging
+from configparser import ConfigParser
+
 from django.core.management.base import BaseCommand
 from django.utils.crypto import get_random_string
-from configparser import ConfigParser
-import json
+
+from course.models import School, Subject
 from OpenData.library import *
-import logging
 
 config = ConfigParser()
 config.read("config/config.ini")

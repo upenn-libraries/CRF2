@@ -6,12 +6,13 @@
 
 
 import json
+import pprint as pp
+import random
 import re
 import time
-import requests
-import random
 from configparser import ConfigParser
-import pprint as pp
+
+import requests
 from loading_with_api import *
 
 # here are most of the basic API requests that should support the CRF

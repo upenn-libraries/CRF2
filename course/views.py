@@ -1,55 +1,51 @@
-from course.models import *  # Course, Notice, Request, School, Subject, AutoAdd
-from course.serializers import *  # CourseSerializer, UserSerializer, NoticeSerializer, RequestSerializer, SchoolSerializer, SubjectSerializer, AutoAddSerializer
-from rest_framework import generics, permissions
-from django.contrib.auth.models import User
-from course.permissions import IsOwnerOrReadOnly
-from rest_framework.permissions import (
-    IsAuthenticatedOrReadOnly,
-    IsAdminUser,
-    BasePermission,
-    IsAuthenticated,
-    SAFE_METHODS,
-)
-from rest_framework.reverse import reverse
-from django.utils.datastructures import MultiValueDict
-from rest_framework.utils import html
-from rest_framework import viewsets, status
-from django.contrib.auth.decorators import login_required
-from django.http.request import QueryDict
-from rest_framework.renderers import TemplateHTMLRenderer, JSONRenderer
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from django.views.generic import TemplateView
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.urls import path
-from course import views, email_processor, utils
-from django.core.mail import EmailMessage
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import redirect, render, get_object_or_404
-from django.contrib import messages
-from rest_framework.pagination import PageNumberPagination
-from django.db.models import Q
-from rest_framework.utils.urls import replace_query_param, remove_query_param
-from django_filters import rest_framework as filters
-from django.contrib.auth.mixins import LoginRequiredMixin
-from course.forms import ContactForm, EmailChangeForm
-from django.template.loader import get_template
 import datetime
 import json
-from django.core.files import File
-from rest_framework.exceptions import PermissionDenied
-from django_celery_beat.models import PeriodicTask, IntervalSchedule, CrontabSchedule
-from canvas import api as canvas_api
-from course.forms import UserForm, SubjectForm, CanvasSiteForm
 import time
-from OpenData import library
+import urllib.parse
 from configparser import ConfigParser
+
+from django.contrib import messages
+from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.models import User
+from django.core.files import File
+from django.core.mail import EmailMessage
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.db.models import Q
+from django.http import HttpResponse, HttpResponseRedirect
+from django.http.request import QueryDict
+from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import get_template
+from django.urls import path
+from django.utils.datastructures import MultiValueDict
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
-from django.contrib.auth import views as auth_views
-from django.contrib.auth.mixins import UserPassesTestMixin
-import urllib.parse
+from django.views.generic import TemplateView
+from django_celery_beat.models import (CrontabSchedule, IntervalSchedule,
+                                       PeriodicTask)
+from django_filters import rest_framework as filters
+from rest_framework import generics, permissions, status, viewsets
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import (SAFE_METHODS, BasePermission,
+                                        IsAdminUser, IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
+from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
+from rest_framework.response import Response
+from rest_framework.reverse import reverse
+from rest_framework.utils import html
+from rest_framework.utils.urls import remove_query_param, replace_query_param
+from rest_framework.views import APIView
+
+from canvas import api as canvas_api
+from course import email_processor, utils, views
+from course.forms import (CanvasSiteForm, ContactForm, EmailChangeForm,
+                          SubjectForm, UserForm)
+from course.models import *  # Course, Notice, Request, School, Subject, AutoAdd
+from course.permissions import IsOwnerOrReadOnly
+from course.serializers import *  # CourseSerializer, UserSerializer, NoticeSerializer, RequestSerializer, SchoolSerializer, SubjectSerializer, AutoAddSerializer
+from OpenData import library
 
 """
 For more 'Detailed descriptions, with full methods and attributes, for each
@@ -71,9 +67,9 @@ of Django REST Framework's class-based views and serializers'see: http://www.cdr
 ########## ERROR VIEWS ###############
 ######################################
 
-from rest_framework.views import exception_handler
-from rest_framework import status
 from django.shortcuts import redirect, render
+from rest_framework import status
+from rest_framework.views import exception_handler
 
 
 def emergency_redirect(request):

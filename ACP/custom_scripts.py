@@ -1,16 +1,17 @@
+import datetime
+import os
+import sys
+from configparser import ConfigParser
+
+import pandas as pd
+from canvasapi import Canvas
+from canvasapi.exceptions import CanvasException
+
 from course.models import *
 from datawarehouse import datawarehouse
 from datawarehouse.helpers import *
-import datetime
-import os
-from .logger import canvas_logger
-from .logger import crf_logger
-import sys
-from configparser import ConfigParser
-from canvasapi import Canvas
-from canvasapi.exceptions import CanvasException
-import pandas as pd
 
+from .logger import canvas_logger, crf_logger
 
 config = ConfigParser()
 config.read("config/config.ini")

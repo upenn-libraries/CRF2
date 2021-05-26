@@ -1,11 +1,13 @@
 # testing Provisioning process and other tests
 import os
 import sys
-from .logger import canvas_logger
-from .logger import crf_logger
-from course.models import *
-from canvasapi import Canvas
 from configparser import ConfigParser
+
+from canvasapi import Canvas
+
+from course.models import *
+
+from .logger import canvas_logger, crf_logger
 
 # here are most of the basic API requests that should support the CRF
 
