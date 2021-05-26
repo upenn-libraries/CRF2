@@ -156,7 +156,7 @@ title = "gitlab gitleaks config"
         regexes = [
             '''(?i)((foreign|primary)[-_]key)''',
             '''(?i)(auth\s*?=\s*?auth)''',
-            '''(?i)(auth\s*?=\s*?\(usrnm,psswd\))''',
+            '''(?i)(auth\s*?=\s*?\(usrnm,\spsswd\))''',
             '''(?i)(key\s*?=\s*?'::'.join\(_copy.values\(\)\))''',
             '''(?i)(key:%s)''',
             '''(?i)(key\s*?=\s*?(config.get|line.replace|key|models.textfield|none|user.username))''',
