@@ -38,7 +38,7 @@ WHSE.UPENN.EDU=
   )
 ```
 
-) 6. Create a config file at "config/config.ini" (you will need to create the "config" directory) and add the appropriate values. Here is a sample config file:
+6. Create a config file at "config/config.ini" (you will need to create the "config" directory) and add the appropriate values. Here is a sample config file:
 
 ```ini
 [django]
