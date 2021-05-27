@@ -4,17 +4,15 @@ A site that manages the creation of SRS courses in Penn's Canvas instance. Built
 
 For more information, see the [wiki](https://github.com/Mfhodges/CRF2/wiki).
 
-Production instance: [http://reqform01.library.upenn.int/](http://reqform01.library.upenn.int/)  
-Development instance: [http://reqform01.library.upenn.int/](http://reqform-dev.library.upenn.int/)  
+Production instance: [reqform01.library.upenn.int/](http://reqform01.library.upenn.int/)  
+Development instance: [reqform-dev.library.upenn.int/](http://reqform-dev.library.upenn.int/)  
 Server configuration: [https://gitlab.library.upenn.edu/course-request/crf2_config](https://gitlab.library.upenn.edu/course-request/crf2_config)
 
 ## Local Development
 
 ### Access Requirements
 
-Access to the following is required for local development:
-
-- GlobalProtect VPN (required to connect to the Data Warehouse)
+- [GlobalProtect VPN](https://www.isc.upenn.edu/how-to/university-vpn-getting-started-guide) (required to connect to the Data Warehouse)
 
 ### Installation
 
@@ -22,7 +20,7 @@ Access to the following is required for local development:
 2. Create a [virtual environment](https://docs.python.org/3/tutorial/venv.html) via your preferred method
 3. Install project dependencies: `pip install -r requirements.txt`
 4. Install [Oracle Instant Client](https://www.oracle.com/database/technologies/instant-client/downloads.html) for your platform
-5. Create a "tnsnames.ora" file in the "network/admin" directory within your Oracle Instant Client directory, using the following values:
+5. Create a "tnsnames.ora" file in your Oracle Instant Client's "network/admin" directory, using the following values:
 
 ```
 WHSE.UPENN.EDU=
@@ -39,8 +37,6 @@ WHSE.UPENN.EDU=
     )
   )
 ```
-
-_NOTE: This will require access via Penn's GlobalProtect VPN_
 
 ) 6. Create a config file at "config/config.ini" (you will need to create the "config" directory) and add the appropriate values. Here is a sample config file:
 
@@ -99,10 +95,8 @@ To test using your virtual environment's interactive shell, use `python manage.p
 
 ### Access Requirements
 
-Access to the following is required for working on the production and development instances:
-
-- WireGuard VPN
-- SSH access to the production and development instances
+- WireGuard VPN (must be set up through [Penn IT Help Desk](https://ithelp.library.upenn.edu/support/home)) 
+- SSH access to the production and development domains
 - Permissions to "switch user" to user "django"
 
 ### Commands
@@ -114,15 +108,15 @@ To login to the production and development instances:
 
 To pull changes from GitLab:
 
-1. `cd crf2`
+1. `cd /home/django/crf2`
 2. `git pull`
 
 To restart the app:
 
-1. `cd crf2/crf2`
+1. `cd /home/django/crf2/crf2`
 2. `touch wsgi.py`
 
 Working with the virtual environment:
 
-- Activation: `source venv/bin/activate`
+- Activation: `source /home/django/venv/bin/activate`
 - Deactivation: `exit`
