@@ -1,6 +1,6 @@
 # Course Request Form
 
-A site that manages the creation of SRS courses in Penn's Canvas instance. Built with [Django](https://www.djangoproject.com/).
+Site that manages the creation of SRS courses in Penn's Canvas instance. Built with [Django](https://www.djangoproject.com/).
 
 For more information, see the [wiki](https://github.com/Mfhodges/CRF2/wiki).
 
