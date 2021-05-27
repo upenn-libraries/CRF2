@@ -121,3 +121,8 @@ To restart the app:
 
 1. `cd crf2/crf2`
 2. `touch wsgi.py`
+
+Working with the virtual environment:
+
+- Activation: `source venv/bin/activate`
+- Deactivation: `exit`
