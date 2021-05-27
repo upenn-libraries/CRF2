@@ -8,13 +8,41 @@ Production instance: [http://reqform01.library.upenn.int/](http://reqform01.libr
 Development instance: [http://reqform01.library.upenn.int/](http://reqform-dev.library.upenn.int/)  
 Server configuration: [https://gitlab.library.upenn.edu/course-request/crf2_config](https://gitlab.library.upenn.edu/course-request/crf2_config)
 
-## Development installation
+## Local Development
 
-1. Install Python 3.8.10 (recommend version management with [pyenv](https://github.com/pyenv/pyenv))
+### Access Requirements
+
+Access to the following is required for local development:
+
+- GlobalProtect VPN (required to connect to the Data Warehouse)
+
+### Installation
+
+1. Install Python 3.6.5 (recommend version management with [pyenv](https://github.com/pyenv/pyenv))
 2. Create a [virtual environment](https://docs.python.org/3/tutorial/venv.html) via your preferred method
 3. Install project dependencies: `pip install -r requirements.txt`
 4. Install [Oracle Instant Client](https://www.oracle.com/database/technologies/instant-client/downloads.html) for your platform
-5. Create a config file at "config/config.ini" (you will need to create the "config" directory) and add the appropriate values. Here is a sample config file:
+5. Create a "tnsnames.ora" file in the "network/admin" directory within your Oracle Instant Client directory, using the following values:
+
+```
+WHSE.UPENN.EDU=
+  (DESCRIPTION=
+    (ADDRESS=
+      (COMMUNITY=isc.penn)
+      (PROTOCOL=TCP)
+      (HOST=warehouse.isc.upenn.edu)
+      (PORT=1521)
+    )
+    (CONNECT_DATA=
+      (GLOBAL_NAME=whse)
+      (SID=whse)
+    )
+  )
+```
+
+_NOTE: This will require access via Penn's GlobalProtect VPN_
+
+) 6. Create a config file at "config/config.ini" (you will need to create the "config" directory) and add the appropriate values. Here is a sample config file:
 
 ```ini
 [django]
@@ -51,7 +79,7 @@ password = password
 service = whse.upenn.edu
 ```
 
-## Commands
+### Commands
 
 Project settings are stored in "crf2/settings.py". For development, set `DEBUG = True` (be sure to revert this before committing your code!)
 
@@ -65,4 +93,31 @@ To run the application the first time:
 To log in as an admin: [http://localhost:8000/admin/](http://localhost:8000/admin/)  
 To log in as a user: [http://localhost:8000/accounts/login/](http://localhost:8000/accounts/login/)
 
-For testing in a project-specific interactive shell, use `python manage.py shell_plus`.
+To test using your virtual environment's interactive shell, use `python manage.py shell_plus`.
+
+## Server
+
+### Access Requirements
+
+Access to the following is required for working on the production and development instances:
+
+- WireGuard VPN
+- SSH access to the production and development instances
+- Permissions to "switch user" to user "django"
+
+### Commands
+
+To login to the production and development instances:
+
+1. `ssh reqform01.library.upenn.int` (production) or `ssh eqform-dev.library.upenn.int` (development)
+2. `sudo su - django`
+
+To pull changes from GitLab:
+
+1. `cd crf2`
+2. `git pull`
+
+To restart the app:
+
+1. `cd crf2/crf2`
+2. `touch wsgi.py`
