@@ -109,7 +109,7 @@ Access to the following is required for working on the production and developmen
 
 To login to the production and development instances:
 
-1. `ssh reqform01.library.upenn.int` (production) or `ssh eqform-dev.library.upenn.int` (development)
+1. `ssh reqform01.library.upenn.int` (production) or `ssh reqform-dev.library.upenn.int` (development)
 2. `sudo su - django`
 
 To pull changes from GitLab:
