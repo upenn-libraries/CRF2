@@ -298,12 +298,9 @@ def pull_instructors(term):
                         NEW_INSTRUCTOR_VALUES[course_code] = [instructor]
                 else:
                     message = f"Couldn't create account for: {first_name} {last_name} | {pennkey} | {penn_id} | {email}"
-                    print(message)
                     logging.getLogger("error_logger").error(message)
-            print(f"Process successful for course {course_code}")
         except:
             message = f"Couldn't find course {course_code}"
-            print(message)
             logging.getLogger("error_logger").error(message)
 
     for course_code, instructors in NEW_INSTRUCTOR_VALUES.items():
@@ -314,10 +311,8 @@ def pull_instructors(term):
                 course.instructors.add(instructor)
             course.save()
         except:
-            message = f"Couldn't find course {course_code}"
-            print(message)
-
-    print(NEW_INSTRUCTOR_VALUES)
+            message = f"Error adding new instructor(s) to course"
+            logging.getLogger("error_logger").error(message)
 
 
 def crosslist_courses(term):
@@ -359,7 +354,6 @@ def clear_instructors(term):
 
 def daily_sync(term):
     pull_courses(term)
-    clear_instructors(term)  # -- only for non requested courses
     pull_instructors(term)  # -- only for non requested courses
     # crosslisting_cleanup() -- check that for every course with a primary crosslisting that its actually crosslisted with that course
     utils.process_canvas()  # -- for each user check if they have any Canvas sites that arent in the CRF yet
