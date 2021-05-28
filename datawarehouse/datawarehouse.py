@@ -1,20 +1,26 @@
-# myscript.py
 from __future__ import print_function
-import cx_Oracle
-from configparser import ConfigParser
-import string
+
 import logging
-from course import utils
 import re
-from OpenData.library import *
-from course.models import *
+import string
+from configparser import ConfigParser
 from datetime import datetime
+
+import cx_Oracle
+from course import utils
+from course.models import *
+from OpenData.library import *
+
+
+def get_credentials():
+    config = ConfigParser()
+    config.read("config/config.ini")
+    values = dict(config.items("datawarehouse"))
+    return values["user"], values["password"], values["service"]
 
 
 def roman_title(title):
-    # takes the last roman numeral and capitalizes it
     roman_numeral = re.findall(r" [MDCLXVI]+", title)
-    # print(roman_numeral)
     title = string.capwords(title)
     if roman_numeral:
         title = title.replace(roman_numeral[-1].upper(), roman_numeral[-1][1:])
@@ -24,8 +30,6 @@ def roman_title(title):
 def userlookup(pennid):
     config = ConfigParser()
     config.read("config/config.ini")
-
-    print(config.sections())
     info = dict(config.items("datawarehouse"))
     connection = cx_Oracle.connect(info["user"], info["password"], info["service"])
     cursor = connection.cursor()
@@ -40,12 +44,10 @@ def userlookup(pennid):
         print("Values:", [fname, lname, email, pennkey])
         return [fname, lname, email, pennkey]
 
-    # return([fname, lname, email, pennkey])
 
-
-def update_courses(term):
-    # check if the term is closed
-    pass
+# def update_courses(term):
+#     # check if the term is closed
+#     pass
 
 
 def pull_courses(term):
@@ -248,14 +250,8 @@ def pull_courses(term):
 
 
 def pull_instructors(term):
-    # should add instructors to courses that have not been requested yet
-    config = ConfigParser()
-    config.read("config/config.ini")
-
-    # check that term is available!
-
-    info = dict(config.items("datawarehouse"))
-    connection = cx_Oracle.connect(info["user"], info["password"], info["service"])
+    user, password, service = get_credentials()
+    connection = cx_Oracle.connect(user, password, service)
     cursor = connection.cursor()
     cursor.execute(
         """
@@ -272,61 +268,51 @@ def pull_instructors(term):
     WHERE cs.TERM= :term""",
         term=term,
     )
+
+    NEW_INSTRUCTOR_VALUES = dict()
+
     for first_name, last_name, pennkey, penn_id, email, section_id in cursor:
-        course_code = section_id + term
-        course_code = course_code.replace(" ", "")
-        course = None
+        course_code = (section_id + term).replace(" ", "")
         try:
             course = Course.objects.get(course_code=course_code)
-        except:
-            pass  # fail silently -- this course isnt in the CRF but this isnt the place to handle such an error
-        if course and course.requested == False:  # if we didn't fail silently
-            # check if instructor in CRF
-            instructor = None
-            try:
-                instructor = User.objects.get(username=pennkey)
-            except:  # they are not in the CRF lets ~try~ to create them
-                # clean up first and last names
-                first_name = first_name.title()
-                last_name = last_name.title()
+            if course.requested == False:
                 try:
-                    instructor = User.objects.create_user(
-                        username=pennkey,
-                        first_name=first_name,
-                        last_name=last_name,
-                        email=email,
-                    )
-                    Profile.objects.create(user=instructor, penn_id=penn_id)
+                    instructor = User.objects.get(username=pennkey)
                 except:
-                    pass
-            if (
-                instructor
-            ):  # we have the course in the CRF and the instructor in the CRF
+                    try:
+                        first_name = first_name.title()
+                        last_name = last_name.title()
+                        instructor = User.objects.create_user(
+                            username=pennkey,
+                            first_name=first_name,
+                            last_name=last_name,
+                            email=email,
+                        )
+                        Profile.objects.create(user=instructor, penn_id=penn_id)
+                    except:
+                        instructor = None
+                if instructor:
+                    try:
+                        NEW_INSTRUCTOR_VALUES[course_code].append(instructor)
+                    except:
+                        NEW_INSTRUCTOR_VALUES[course_code] = [instructor]
+                else:
+                    message = f"Couldn't create account for: {first_name} {last_name} | {pennkey} | {penn_id} | {email}"
+                    logging.getLogger("error_logger").error(message)
+        except:
+            message = f"Couldn't find course {course_code}"
+            logging.getLogger("error_logger").error(message)
+
+    for course_code, instructors in NEW_INSTRUCTOR_VALUES.items():
+        try:
+            course = Course.objects.get(course_code=course_code)
+            course.instructors.clear()
+            for instructor in instructors:
                 course.instructors.add(instructor)
-                course.save()
-            else:
-                print(
-                    "couldn't create account for ",
-                    first_name,
-                    last_name,
-                    pennkey,
-                    penn_id,
-                    email,
-                )
-                logging.getLogger("error_logger").error(
-                    "couldn't create account for {first:%s, last:%s, pennkey:%s, penn_id:%s, email:%s}",
-                    first_name,
-                    last_name,
-                    pennkey,
-                    penn_id,
-                    email,
-                )
-                # make this a log function!
-        else:
-            print("couldn't find course", course_code)
-            logging.getLogger("error_logger").error(
-                "couldn't find course %s", course_code
-            )
+            course.save()
+        except:
+            message = f"Error adding new instructor(s) to course"
+            logging.getLogger("error_logger").error(message)
 
 
 def crosslist_courses(term):
@@ -368,7 +354,6 @@ def clear_instructors(term):
 
 def daily_sync(term):
     pull_courses(term)
-    clear_instructors(term)  # -- only for non requested courses
     pull_instructors(term)  # -- only for non requested courses
     # crosslisting_cleanup() -- check that for every course with a primary crosslisting that its actually crosslisted with that course
     utils.process_canvas()  # -- for each user check if they have any Canvas sites that arent in the CRF yet
