@@ -306,7 +306,7 @@ def pull_instructors(term):
             print(message)
             logging.getLogger("error_logger").error(message)
 
-    for course_code, instructors in enumerate(NEW_INSTRUCTOR_VALUES):
+    for course_code, instructors in NEW_INSTRUCTOR_VALUES.items():
         try:
             course = Course.objects.get(course_code=course_code)
             course.instructors.clear()
