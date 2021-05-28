@@ -8,7 +8,6 @@ from configparser import ConfigParser
 from datetime import datetime
 
 import cx_Oracle
-
 from course import utils
 from course.models import *
 from OpenData.library import *
@@ -371,9 +370,7 @@ def clear_instructors(term):
 
 def daily_sync(term):
     pull_courses(term)
-    clear_instructors(
-        term
-    )  # -- only for non requested courses; this has been integrated into pull_instructors
+    clear_instructors(term)  # -- only for non requested courses
     pull_instructors(term)  # -- only for non requested courses
     # crosslisting_cleanup() -- check that for every course with a primary crosslisting that its actually crosslisted with that course
     utils.process_canvas()  # -- for each user check if they have any Canvas sites that arent in the CRF yet
