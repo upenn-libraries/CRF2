@@ -300,6 +300,7 @@ def pull_instructors(term):
                     message = f"Couldn't create account for: {first_name} {last_name} | {pennkey} | {penn_id} | {email}"
                     print(message)
                     logging.getLogger("error_logger").error(message)
+            print(f"Process successful for course {course_code}")
         except:
             message = f"Couldn't find course {course_code}"
             print(message)
