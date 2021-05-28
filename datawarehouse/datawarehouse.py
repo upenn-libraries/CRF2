@@ -306,7 +306,7 @@ def pull_instructors(term):
             logging.getLogger("error_logger").error(message)
 
     for course_code, instructors in enumerate(NEW_INSTRUCTOR_VALUES):
-        course = Course.ojbects.get(course_code=course_code)
+        course = Course.objects.get(course_code=course_code)
         course.instructors.clear()
         for instructor in instructors:
             course.instructors.add(instructor)
