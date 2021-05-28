@@ -306,15 +306,16 @@ def pull_instructors(term):
             print(message)
             logging.getLogger("error_logger").error(message)
 
-    try:
-        for course_code, instructors in enumerate(NEW_INSTRUCTOR_VALUES):
+    for course_code, instructors in enumerate(NEW_INSTRUCTOR_VALUES):
+        try:
             course = Course.objects.get(course_code=course_code)
             course.instructors.clear()
             for instructor in instructors:
                 course.instructors.add(instructor)
             course.save()
-    except:
-        print("ERROR")
+        except:
+            message = f"Couldn't find course {course_code}"
+            print(message)
 
     print(NEW_INSTRUCTOR_VALUES)
 
