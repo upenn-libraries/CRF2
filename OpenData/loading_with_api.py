@@ -286,8 +286,9 @@ def check_instance(instance, id):
 ####################################
 #########  BASIC CREATION  #########
 ####################################
-# def create_instructor(penn_id):
-# how do i get their info??
+def create_instructor(penn_id):
+    # how do i get their info??
+    pass
 
 
 def create_instance(uri, data):

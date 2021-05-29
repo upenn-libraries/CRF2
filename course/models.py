@@ -283,20 +283,20 @@ class Course(models.Model):
             # check if the course has a direct request
             try:
                 exists = self.request
-                print("request obj", exists)
+                # print("request obj",exists)
                 return True
             except:
                 # check if the course has been tied into other requests
 
                 exists = self.multisection_request
                 exists_cross = self.crosslisted_request
-                print(" multi section request obj", exists)
+                # print(" multi section request obj",exists)
                 if exists or exists_cross:  # check that its not none
                     return True
                 else:
                     return False
                 return False
-        print("we hit base case that i havent planned for")
+        # print("we hit base case that i havent planned for")
 
     ### wrong logic -- can have diff numbers ###
     def find_crosslisted(self):
@@ -309,7 +309,7 @@ class Course(models.Model):
             & Q(course_term=self.course_term)
             & Q(year=self.year)
         )
-        print("found course", cross_courses)
+        # print("found course", cross_courses)
         for course in cross_courses:
             self.crosslisted.add(course)
             self.save()

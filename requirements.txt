@@ -8,7 +8,7 @@ coreapi==2.3.3
 coreschema==0.0.4
 cx-Oracle==8.2.0
 dj-database-url==0.5.0
-Django==2.2.10
+Django==2.1.2
 django-admin-autocomplete-filter==0.2
 django-autocomplete-light==3.3.5
 django-celery-beat==1.4.0
