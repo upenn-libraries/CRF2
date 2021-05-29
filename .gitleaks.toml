@@ -160,7 +160,7 @@ title = "gitlab gitleaks config"
             '''(?i)(auth\s*?=\s*?\(usrnm,psswd\))''',
             '''(?i)(key\s*?=\s*?'::'.join\(_copy.values\(\)\))''',
             '''(?i)(key:%s)''',
-            '''(?i)("key")''',
+            '''(?i)(\["key"\])''',
             '''(?i)(key\s*?=\s*?(config.get|line.replace|key|models.textfield|none|user.username))''',
             '''(?i)(key\s*?=\s*?(:?)p?penn(_?)key)''',
             '''(?i)(key\s*?=\s*?request.(get|post))''',
