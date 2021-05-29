@@ -1,23 +1,14 @@
-import json
-import re
 from configparser import ConfigParser
 
-import requests
-
-# here are most of the basic API requests that should support the CRF
+from canvasapi import Canvas
+from canvasapi.exceptions import CanvasException
 
 config = ConfigParser()
 config.read("config/config.ini")
-domain = config.get("canvas", "prod_env")  #'prod_env')
-key = config.get("canvas", "prod_key")  #'prod_key')
+domain = config.get("canvas", "prod_env")
+key = config.get("canvas", "prod_key")
 headers = {"Authorization": "Bearer %s" % (key)}
 
-
-# Import the Canvas class
-from canvasapi import Canvas
-from canvasapi.enrollment_term import EnrollmentTerm
-from canvasapi.exceptions import CanvasException
-from canvasapi.tab import Tab
 
 # Canvas API URL
 API_URL = domain
@@ -47,7 +38,7 @@ def get_user_by_sis(login_id):
 # need to test this
 def mycreate_user(pennkey, pennid, email, fullname):
     # 1. create account with SIS_ID speciified
-    canvas = Canvas(API_URL, API_KEY)
+    # canvas = Canvas(API_URL, API_KEY)
     pseudonym = {"sis_user_id": pennid, "unique_id": pennkey}
     try:
         account = find_account(96678)
@@ -61,7 +52,7 @@ def mycreate_user(pennkey, pennid, email, fullname):
 
 def get_user_courses(login_id):
     user = get_user_by_sis(login_id)
-    if user == None:
+    if user is None:
         return None
     return user.get_courses(enrollment_type="teacher")
 
@@ -73,7 +64,8 @@ def find_in_canvas(sis_section_id):
     """
     # to see if the course exits just search the section
     # https://canvas.upenn.edu/api/v1/sections/sis_section_id:SRS_BIOL-101-601%202014C
-    # (line 1048) https://github.com/ucfopen/canvasapi/blob/49ddf3d12c411de25121a8a04b99a0b62b6a1de4/canvasapi/canvas.py
+    # (line 1048)
+    # https://github.com/ucfopen/canvasapi/blob/49ddf3d12c411de25121a8a04b99a0b62b6a1de4/canvasapi/canvas.py
 
     canvas = Canvas(API_URL, API_KEY)
     try:

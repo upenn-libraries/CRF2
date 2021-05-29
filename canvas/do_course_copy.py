@@ -1,8 +1,7 @@
-## this needs to be EDITED!!! this is only a rough draft
+# this needs to be EDITED!!! this is only a rough draft
 
 import csv
 import json
-import sys
 
 import requests
 
@@ -18,12 +17,10 @@ user = {
 }
 
 
-####
-## Stop Editing after this
-####
+# Stop Editing after this
 try:
     course_list_done = json.load(open(cache_filename, "r+"))
-except ValueError as err:
+except ValueError:
     course_list_done = []
 course_list = csv.DictReader(open(template_filename, "U"))
 

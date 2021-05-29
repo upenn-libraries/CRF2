@@ -1,22 +1,11 @@
 # https://esb.isc-seo.upenn.edu/8091/open_data/course_info/
-
-
 # https://esb.isc-seo.upenn.edu/8091/open_data/course_section_search_parameters/
-
-
 import csv
-import json
-import pprint as pp
-import re
-import time
+import sys
 from configparser import ConfigParser
 
-import requests
-
-from course.models import *
+from course.models import Course
 from OpenData.library import OpenData
-
-# here are most of the basic API requests that should support the CRF
 
 config = ConfigParser()
 config.read("config/config.ini")
@@ -28,8 +17,6 @@ def find_crosslistings(year_term):
     key = config.get("opendata", "key2")
     print(domain, id, key)
     OData = OpenData(base_url=domain, id=id, key=key)
-    # saved for special lookups
-    OData_lookup = OpenData(base_url=domain, id=id, key=key)
 
     data = OData.get_courses_by_term(year_term)
     print("data", data)
@@ -37,14 +24,14 @@ def find_crosslistings(year_term):
     with open("crosslisting_fix.csv", mode="w") as crosslisting_fix:
         crosslisting_fix = csv.writer(crosslisting_fix, delimiter=",", quotechar='"')
 
-        while data != None:
+        while data is not None:
             print("\n\tSTARTING PAGE : ", page, "\n")
             if data == "ERROR":
                 print("ERROR")
                 sys.exit()
-            if isinstance(
-                data, dict
-            ):  # sometimes the data passed back can be a single course and in that case it should be put in a list
+            if isinstance(data, dict):
+                # sometimes the data passed back can be a single course and in
+                # that case it should be put in a list
                 data = [data]
             for datum in data:
                 # we want to find when the cross list has diff course number
@@ -97,12 +84,10 @@ def fix_crosslistings():
                     crf_course.primary_crosslist = primary
 
                     if (
-                        crf_course.requested == True or crf_primary.requested == True
+                        crf_course.requested or crf_primary.requested
                     ):  # check if either have been requested
                         check.writerow(["needs_review", course, primary])
-                    elif (
-                        crf_course.requested == False and crf_primary.requested == False
-                    ):  #
+                    elif not crf_course.requested and not crf_primary.requested:  #
                         # this case we can remediate
                         print("adding", course, primary)
                         crf_course.crosslisted.add(
