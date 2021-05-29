@@ -15,3 +15,5 @@ ACP/data/
 
 .idea/
 .DS_Store
+
+.flake8

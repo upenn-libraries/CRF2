@@ -2,7 +2,7 @@ import logging
 from logging import FileHandler, Formatter
 
 """
-format for 
+format for
 1. Canvas errors
 2. CRF errors
 3. email errors

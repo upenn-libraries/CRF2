@@ -1,10 +1,11 @@
-# script that creates Requests in the CRF based on the final SIS ID file.
-# the requests are then all approved and proceed from this script
-# also any additional site configurations are then implemented
+# script that creates Requests in the CRF based on the final SIS ID file.  the
+# requests are then all approved and proceed from this script also any
+# additional site configurations are then implemented
 
 
-## ONLY RUN THIS FROM home/crf2/ in $ python3 manage.py shell
-## file = the 2nd file created in create_course_list that contains sis ids of courses that haven't been created yet.
+# ONLY RUN THIS FROM home/crf2/ in $ python3 manage.py shell file = the 2nd file
+# created in create_course_list that contains sis ids of courses that haven't
+# been created yet.
 
 import datetime
 import os
@@ -12,19 +13,15 @@ import sys
 from configparser import ConfigParser
 
 from canvasapi import Canvas
-from canvasapi.exceptions import CanvasException
-
-from course.models import *
+from course.models import Course, Request, User
 from course.tasks import create_canvas_site
-from datawarehouse import datawarehouse
 
-from .create_course_list import sis_id_status
 from .logger import canvas_logger, crf_logger
 
 config = ConfigParser()
 config.read("config/config.ini")
-API_URL = config.get("canvas", "prod_env")  #'prod_env')
-API_KEY = config.get("canvas", "prod_key")  #'prod_key')
+API_URL = config.get("canvas", "prod_env")
+API_KEY = config.get("canvas", "prod_key")
 
 
 """
@@ -33,15 +30,12 @@ BEFORE YOU DO ANYTHING PLEASE SYNC INSTRUCTORS AND COURSES WITH SRS!!!
 
 Configurations to run with:
 
-	- publish
-	- enable panopto - external_tools/90311
-	- copy from: 1502387
-	- storage: 2GB
+    - publish
+    - enable panopto - external_tools/90311
+    - copy from: 1502387
+    - storage: 2GB
 
 """
-
-
-######## TESTS / HELPERS ########
 
 
 def test_CRF_App():
@@ -282,11 +276,9 @@ def get_FA_canvas_ids():
             print("error with :", r)
 
 
-######## CODE TO USE ########
-
-
 def create_requests(inputfile="notUsedSIS.txt", copy_site=""):
-    # copy_site is the canvas id of a Canvas site inwhich we'd like to copy content from.
+    # copy_site is the canvas id of a Canvas site inwhich we'd like to copy
+    # content from.
     owner = User.objects.get(username="mfhodges")
     my_path = os.path.dirname(os.path.abspath(sys.argv[0]))
     print("path", my_path)
@@ -305,13 +297,16 @@ def create_requests(inputfile="notUsedSIS.txt", copy_site=""):
                 r = Request.objects.create(
                     course_requested=course,
                     copy_from_course=copy_site,
-                    additional_instructions="Created automatically, contact courseware support for info",
+                    additional_instructions=(
+                        "Created automatically, contact courseware support for info"
+                    ),
                     owner=owner,
                     created=datetime.datetime.now(),
                 )
                 r.status = "APPROVED"  # mark request as approved
                 r.save()
-                course.save()  ## you have to save the course to update its request status !
+                # you have to save the course to update its request status !
+                course.save()
                 print("Created request for: %s" % line)
             except:
                 print("\t Failed to create request for: %s" % line)
@@ -329,8 +324,9 @@ def create_requests(inputfile="notUsedSIS.txt", copy_site=""):
 
 def gather_request_process_notes(inputfile="notUsedSIS.txt"):
     # Gathers the `process_notes` for all processed requests
-    # Creates a file of all of the process notes for each request (this can be used to find who has a new account)
-    # Creates a file of canvas sites that have been created.
+    # Creates a file of all of the process notes for each request (this can be
+    # used to find who has a new account) Creates a file of canvas sites that
+    # have been created.
     my_path = os.path.dirname(os.path.abspath(sys.argv[0]))
     file_path = os.path.join(my_path, "ACP/data", inputfile)
     print("file path", file_path)
@@ -363,28 +359,33 @@ def gather_request_process_notes(inputfile="notUsedSIS.txt"):
 
 def process_requests(file="notUsedSIS.txt"):
 
-    # THERE IS A BUG IN THE FOLLOWING FUNCTION THAT DOES NOT ALLOW A CREATION TO FAIL SILENTLY
+    # THERE IS A BUG IN THE FOLLOWING FUNCTION THAT DOES NOT ALLOW A CREATION TO
+    # FAIL SILENTLY
     create_canvas_site()  # runs the task
     # should wait till the above task is done...
     print("\t-> Finished Processing Requests in CRF")
     print(
-        "\t-> NOW: gathering Request Processing Report in `ACP/data/requestProcessNotes.txt`"
+        "\t-> NOW: gathering Request Processing Report in "
+        "`ACP/data/requestProcessNotes.txt`"
     )
     gather_request_process_notes(file)
     print("-> Finished Generating: `ACP/data/requestProcessNotes.txt`")
     print("-> Please Check `ACP/logs/canvas.log` for a list of incomplete Requests")
     print("-> Please Check `ACP/logs/crf.log` for a list of errors in the CRF")
     print(
-        "-> Please Check `ACP/data/requestProcessNotes.txt` for a details on each Request"
+        "-> Please Check `ACP/data/requestProcessNotes.txt` for a details on "
+        "each Request"
     )
     print("-> NEXT: (OPTIONAL) Please now run `config_sites` to configure these sites")
 
 
-"""
-		Pre-populate with Resources: copy content from a site that has resources for first time Canvas users and for async/sync online instruction. Also set on the homepage that this site has been created for ‘Academic Continuity During Disruption’. Info about the closure could also be shared.
-		Storage Quota: increase the storage quota from the standard 1GB to 2GB.
-		Enable LTIs: automatically configure Panopto.
-		Automatically publish the site once created.
+""" Pre-populate with Resources: copy content from a site that has resources for
+        first time Canvas users and for async/sync online instruction. Also set
+        on the homepage that this site has been created for ‘Academic Continuity
+        During Disruption’. Info about the closure could also be shared.
+        Storage Quota: increase the storage quota from the standard 1GB to 2GB.
+        Enable LTIs: automatically configure Panopto.  Automatically publish the
+        site once created.
 """
 
 
@@ -409,7 +410,7 @@ def config_sites(
         canvas = Canvas(API_URL, API_KEY)
         my_path = os.path.dirname(os.path.abspath(sys.argv[0]))
         print("path", my_path)
-        file_path = os.path.join(my_path, "ACP/data", file)
+        file_path = os.path.join(my_path, "ACP/data", inputfile)
         print("file path", file_path)
         dataFile = open(file_path, "r")  # # test6660002020A,1500426
         for line in dataFile:
@@ -446,10 +447,10 @@ def copy_content(file, source_site):
             course_site = None
         if course_site:
             print(course_site)
-            contentmigration = course_site.create_content_migration(
-                migration_type="course_copy_importer",
-                settings={"[source_course_id": source_site},
-            )
+            # contentmigration = course_site.create_content_migration(
+            #     migration_type="course_copy_importer",
+            #     settings={"[source_course_id": source_site},
+            # )
 
 
 def publish_sites(file, capacity):

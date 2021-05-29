@@ -1,24 +1,15 @@
-import datetime
 import os
 import sys
 from configparser import ConfigParser
 
 from canvasapi import Canvas
-from canvasapi.exceptions import CanvasException
-
-from course.models import *
-from datawarehouse import datawarehouse
-from datawarehouse.helpers import *
-
-from .logger import canvas_logger, crf_logger
 
 config = ConfigParser()
 config.read("config/config.ini")
-API_URL = config.get("canvas", "prod_env")  #'prod_env')
-API_KEY = config.get("canvas", "prod_key")  #'prod_key')
+API_URL = config.get("canvas", "prod_env")
+API_KEY = config.get("canvas", "prod_key")
 
 
-########### HELPERS ################
 def code_to_sis(course_code):
     middle = course_code[:-5][-6:]
     sis_id = "SRS_%s-%s-%s %s" % (
@@ -30,20 +21,17 @@ def code_to_sis(course_code):
     return sis_id
 
 
-####################################
+# def config_DESIGN(inputfile, outputfile):
+# once the sites have been created in the CRF.
+# 1. Enable Piazza
+# 2. Perusall
+# 3. Panopto
+# 4. bump up storage quota to 3gb ( if not already )
 
-
-def config_DESIGN(inputfile, outputfile):
-    # once the sites have been created in the CRF.
-    # 1. Enable Piazza
-    # 2. Perusall
-    # 3. Panopto
-    # 4. bump up storage quota to 3gb ( if not already )
-
-    # WHICH OF THESE TOOLS ARE AUTOMATICALLY ADDED?
-    PANOPTO = "context_external_tool_90311"
-    PERUSALL = "context_external_tool_223451"
-    PIAZZA = "context_external_tool_????"  # automatically gets added
+# WHICH OF THESE TOOLS ARE AUTOMATICALLY ADDED?
+# PANOPTO = "context_external_tool_90311"
+# PERUSALL = "context_external_tool_223451"
+# PIAZZA = "context_external_tool_????"  # automatically gets added
 
 
 def SEAS_config(
@@ -64,7 +52,7 @@ def SEAS_config(
         outFile.write("%s,%s,%s" % (canvas_course_id, course_id, status))
         try:
             canvas_course = canvas.get_course(canvas_course_id)
-        except:
+        except Exception:
             print("didnt find course %s" % course_id)
             canvas_course = None
         if canvas_course:
@@ -78,7 +66,7 @@ def SEAS_config(
                         tab.update(hidden=False, position=3)
                         print("\t added panopto")
                         outFile.write(",%s" % "yes")
-                    except:
+                    except Exception:
                         print("\tfailed panopto %s" % course_id)
                         outFile.write(",%s" % "no")
                 # CONFIGURING GRADESCOPE
@@ -88,7 +76,7 @@ def SEAS_config(
                         tab.update(hidden=False, position=4)
                         print("\t added gradescope")
                         outFile.write(",%s" % "yes")
-                    except:
+                    except Exception:
                         print("\tfailed panopto %s" % course_id)
                         outFile.write(",%s" % "no")
                 else:
@@ -115,7 +103,7 @@ def SAS_teacher_info(inputfile="test2.txt", outputfile="SAS_teachers_2020B.csv")
             outFile.write(
                 "%s,%s,%s,%s\n" % (canvas_id, user.name, user.email, user.login_id)
             )
-        except:
+        except Exception:
             outFile.write("%s,err,err,err\n" % (canvas_id))
 
 
@@ -293,7 +281,7 @@ def SEAS_raise_quota(outputfile="RESULT_SEAS_storage_quota.csv"):
         try:
             canvas_course = canvas.get_course(canvas_course_id)
             outFile.write("%s,%s," % (canvas_course.account_id, canvas_course_id))
-        except:
+        except Exception:
             canvas_course = None
             outFile.write("%s,%s," % ("ERR", canvas_course_id))
         if canvas_course:
@@ -305,7 +293,7 @@ def SEAS_raise_quota(outputfile="RESULT_SEAS_storage_quota.csv"):
                 new_quota = old_quota  # DONT LOWER THE QUOTA!!
             try:
                 canvas_course.update(course={"storage_quota_mb": new_quota})
-            except:
+            except Exception:
                 new_quota = "ERROR"
                 print("\t failed to raise quota (%s)" % canvas_course_id)
 

@@ -1,27 +1,15 @@
-import datetime
 import os
 import sys
 from configparser import ConfigParser
 
-import pandas as pd
 from canvasapi import Canvas
-from canvasapi.exceptions import CanvasException
-
-from course.models import *
-from datawarehouse import datawarehouse
-from datawarehouse.helpers import *
-
-from .logger import canvas_logger, crf_logger
 
 config = ConfigParser()
 config.read("config/config.ini")
-API_URL = config.get("canvas", "prod_env")  #'prod_env')
-API_KEY = config.get("canvas", "prod_key")  #'prod_key')
+API_URL = config.get("canvas", "prod_env")
+API_KEY = config.get("canvas", "prod_key")
 
-# API_URL = "https://upenn-catalog.instructure.com"
-# API_KEY = "9540~1AQ6VfHZAECvVPKQjYD1or4cUjo6NOMbc18ITOOxL5gyJiqDCUtPtqolrg7TUmWL"
 
-########### HELPERS ################
 def code_to_sis(course_code):
     middle = course_code[:-5][-6:]
     sis_id = "SRS_%s-%s-%s %s" % (
@@ -44,9 +32,9 @@ def find_accounts_subaccounts(account_id):
     return subs_list
 
 
-####################################
 """
- // type of quiz possible values: 'practice_quiz', 'assignment', 'graded_survey','survey'
+ // type of quiz possible values: 'practice_quiz', 'assignment',
+ 'graded_survey','survey'
   "quiz_type": "assignment",
 """
 
@@ -74,7 +62,8 @@ def count_surveys(inputfile="survey_input.csv", outputfile="RESULT_surveys.csv")
             "total_quizzes",
         )
     )
-    # 'ungraded_surveys_published', 'ungraded_surveys_unpublished', 'graded_surveys_published','graded_surveys_unpublished'
+    # 'ungraded_surveys_published', 'ungraded_surveys_unpublished',
+    # 'graded_surveys_published','graded_surveys_unpublished'
     COUNTER = 0
     TOTAL = 11786
     for line in dataFile:
@@ -93,17 +82,16 @@ def count_surveys(inputfile="survey_input.csv", outputfile="RESULT_surveys.csv")
         quizzes = course.get_quizzes()
         for quiz in quizzes:
             total_quizzes += 1
-            # check ungraded
             if quiz.quiz_type == "survey":
                 # check if published
-                if quiz.published == True:
+                if quiz.published:
                     ungraded_published += 1
                 else:
                     ungraded_unpublished += 1
 
             elif quiz.quiz_type == "graded_survey":
                 # check if published
-                if quiz.published == True:
+                if quiz.published:
                     graded_published += 1
                 else:
                     graded_unpublished += 1
@@ -210,7 +198,8 @@ def temp():
 
 # canvas_course_id, sis_id, canvas_account_id = line.replace("\n","").split(",")
 def add_reserves(inputfile="reserves.csv", outputfile="RESULT_Reserves.csv"):
-    # this script will enable reserves given an input file that contains only one column ( the sis id)
+    # this script will enable reserves given an input file that contains only
+    # one column ( the sis id)
     # if reserves are already enabled it wil note that and not update the site.
     RESERVES = "context_external_tool_139969"
     SUB_ACCOUNTS = [99237, 128877, 99244, 99238, 99239, 99240, 99242]
@@ -224,7 +213,7 @@ def add_reserves(inputfile="reserves.csv", outputfile="RESULT_Reserves.csv"):
         "%s,%s,%s,%s\n" % ("canvas_course_id", "course_id", "account", "Reserves")
     )
 
-    ## build a list of sub account's sub accounts
+    # build a list of sub account's sub accounts
     SUB_SUB_ACCOUNTS = []
     for sub in SUB_ACCOUNTS:
         SUB_SUB_ACCOUNTS += find_accounts_subaccounts(sub)
@@ -273,9 +262,9 @@ def add_reserves(inputfile="reserves.csv", outputfile="RESULT_Reserves.csv"):
                     # skip this tab
                     pass
             # outFile.write("\n")
-        elif canvas_course == None:  # no site
+        elif canvas_course is None:  # no site
             outFile.write(",%s\n" % "couldnt find")
-        elif canvas_course == False:  # not in program
+        elif not canvas_course:  # not in program
             outFile.write(",%s\n" % "not in program")
         else:
             print("HEY YOU SHOULDNT GET TO THIS CASE", canvas_course_id)
@@ -389,7 +378,7 @@ def create_quota_file(
     dataFile.readline()  # THIS SKIPS THE FIRST LINE
     outFile = open(os.path.join(my_path, "ACP/data", outputfile), "w+")
     outFile.write("sis_id\n")
-    counter = 1
+    # counter = 1
     for line in dataFile:
         # print(counter)
         # counter +=1
@@ -420,11 +409,12 @@ def create_quota_file(
 
 0. Run Provisioning Report ___ and delete all columns but the canvas_user_id
 1. find_unconfirmed_emails()
-2. unconfirmed_email_check_school() 
-3. Create a new file from the output of 2 and filter to the schools we can remediate
-4. Run verify_email_list() *
+2. unconfirmed_email_check_school()s
+3. Create a new file from the output of 2 and filter to the schools we can
+    remediate 4. Run verify_email_list() *
 5. Check errors from output
-6. Check the schools we can't remediate (from 3.) by hand to confirm we cant remediate. send list to the schools
+6. Check the schools we can't remediate (from 3.) by hand to confirm we cant
+    remediate. send list to the schools
 
 """
 
@@ -466,10 +456,11 @@ def unconfirmed_email_check_school(
     inputfile="RESULT_2020A_Enrollments.csv",
     outputfile="REMEDIATE_2020A_Enrollments.csv",
 ):
-    # given the unconfirmed emails list, checks in the original file if they have multiple enrollments
-    # if they have multiple enrollments, check if any all of the enrollments are in schools we do not support
-    # if this is the case, write this user down in a separate file
-    # otherwise, write them in a file that will then be remediated.
+    # given the unconfirmed emails list, checks in the original file if they
+    # have multiple enrollments if they have multiple enrollments, check if any
+    # all of the enrollments are in schools we do not support if this is the
+    # case, write this user down in a separate file otherwise, write them in a
+    # file that will then be remediated.
     total = 5893  # HARDCODED
     SUB_ACCOUNTS = []
     ACCOUNTS = [
@@ -597,20 +588,20 @@ def verify_first_email(user_id):
             email = comm_channel.address
             # print(comm_channel.to_json())
             comm_channel.delete()
-            new_channel = user.create_communication_channel(
-                communication_channel={"address": email, "type": "email"},
-                skip_confirmation=True,
-            )
+            # new_channel = user.create_communication_channel(
+            #     communication_channel={"address": email, "type": "email"},
+            #     skip_confirmation=True,
+            # )
             dummy_channel.delete()
 
             # check that email is verified
             email_is_verified = check_verified_email(user_id, email)
-            if email_is_verified == False:
+            if not email_is_verified:
                 print("\t email not verified for user %s" % user_id)
 
             # check that dummy is deleted
             dummy_is_deleted = check_dummy_email_deleted(user_id)
-            if dummy_is_deleted == False:
+            if not dummy_is_deleted:
                 print("\t dummy not deleted for user %s" % user_id)
 
             if dummy_is_deleted and email_is_verified:
@@ -660,7 +651,7 @@ def libGuideUsage(inputfile, outputfile="LibGuides_Canvas_2020A.csv"):
 
 def hide_final_grades(inputfile, outputfile="RESULT_hide_grades.csv"):
     # not finished
-    canvas = Canvas(API_URL, API_KEY)
+    # canvas = Canvas(API_URL, API_KEY)
     total = 1  # HARDCODED
     my_path = os.path.dirname(os.path.abspath(sys.argv[0]))
     file_path = os.path.join(my_path, "ACP/data", inputfile)
@@ -686,7 +677,8 @@ def recent_course_activity(
     dataFile.readline()  # THIS SKIPS THE FIRST LINE
     outFile = open(os.path.join(my_path, "ACP/data", outputfile), "w+")
     outFile.write(
-        "course_id,account_id,account_name,storage,last_activity_instructor,last_activity_student,end_at\n"
+        "course_id, account_id, account_name, storage, last_activity_instructor, "
+        "last_activity_student, end_at\n"
     )
     for line in dataFile:
         overall_last_activity_inst = "0"
@@ -772,9 +764,9 @@ get a provisioning report of all courses
 1.delete all columns but: canvas_id, sis_id,short_name, account_id,status
 2. delete all rows with blank sis_ids
 3. compare with master and remove and previously seen courses
-4. create one file for WH (sis_id !startwith SRS_) and one for rest 
+4. create one file for WH (sis_id !startwith SRS_) and one for rest
 5. run enable_course_shopping() on non wharton file
-6. run WHARTON_enable_course_shopping() on wharton file 
+6. run WHARTON_enable_course_shopping() on wharton file
 7. upload each file results to pennbox
 8. add newly enabled to MASTER
 9. upload new version of MASTER
@@ -925,7 +917,7 @@ def WHARTON_enable_course_shopping(
         counter += 1
         if counter % 25 == 0:
             print("%s/%s done" % (counter, total))
-        ### ASSUMES ALL FIELDS ARE POPULATED  ###
+        # ASSUMES ALL FIELDS ARE POPULATED  ###
         canvas_id, sis_id, short_name, account_id, status = line.replace(
             "\n", ""
         ).split(",")
@@ -957,15 +949,15 @@ def WHARTON_enable_course_shopping(
                     print("\t", canvas_id, sis_id, short_name, account_id, status)
                     update = False
                     in_SRS = WH_linked_to_SRS(canvas_id)
-                    if in_SRS == False:
+                    if not in_SRS:
                         print("\t not in SRS")
-                        notes += "\ not liked to SRS"
+                        notes += " not liked to SRS"
                         update = False
                     elif int(canvas_id) in WH_EXCLUDE:
                         print("\t single site to ignore")
-                        notes += "\ in exclude list"
+                        notes += " in exclude list"
                         update = False
-                    else:  # we know the course is connected to SRS and not a special ignore site
+                    else:
                         update = True
                 except:
                     print("ERROR WITH COURSE: ", sis_id, canvas_id)
@@ -996,7 +988,7 @@ def WHARTON_enable_course_shopping(
                 # check if linked to SRS -- use helper function
                 in_SRS = linked_to_SRS(course_id)
                 # STILL NEED TO MAKE CASE FOR EXECUTIVE MBA
-                if in_SRS == True: 
+                if in_SRS == True:
                     update = True
             else:
                 #CHeck if course's sections are associated with SRS (
@@ -1014,8 +1006,8 @@ def enable_course_shopping(inputfile, outputfile="2020C_courses_shopping_enabled
     SAS_ONL_ACCOUNT = 132413
     ADMIN_ACCOUNT = 131963
 
-    WHARTON_ACCOUNT_ID = 81471
-    WHARTON_ACCOUNTS = find_accounts_subaccounts(WHARTON_ACCOUNT_ID)
+    # WHARTON_ACCOUNT_ID = 81471
+    # WHARTON_ACCOUNTS = find_accounts_subaccounts(WHARTON_ACCOUNT_ID)
 
     SAS_ACCOUNT_ID = 99237
     SAS_ACCOUNTS = find_accounts_subaccounts(SAS_ACCOUNT_ID)
@@ -1040,7 +1032,8 @@ def enable_course_shopping(inputfile, outputfile="2020C_courses_shopping_enabled
     # INDIVIDUAL SITES TO IGNORE
     SINGLE_SITES_TO_IGNORE = ["1529220"]
 
-    # canvas = Canvas("https://upenn.beta.instructure.com", "25~SEUFg2kAnCcarRFHAKTH1H7NIEFu7cEGeKrf2gNGkjAZTzElglrqGiVOlq5BfdKK")
+    # canvas = Canvas("https://upenn.beta.instructure.com",
+    # "25~SEUFg2kAnCcarRFHAKTH1H7NIEFu7cEGeKrf2gNGkjAZTzElglrqGiVOlq5BfdKK")
     my_path = os.path.dirname(os.path.abspath(sys.argv[0]))
     file_path = os.path.join(my_path, "ACP/data", inputfile)
     dataFile = open(file_path, "r")
@@ -1055,7 +1048,7 @@ def enable_course_shopping(inputfile, outputfile="2020C_courses_shopping_enabled
             print("%s/%s done" % (counter, total))
 
         # canvas_course_id, course_id, short_name, canvas_account_id, status
-        ### ASSUMES ALL FIELDS ARE POPULATED  ###
+        # ASSUMES ALL FIELDS ARE POPULATED  ###
         canvas_id, sis_id, short_name, account_id, status = line.replace(
             "\n", ""
         ).split(",")
@@ -1085,14 +1078,14 @@ def enable_course_shopping(inputfile, outputfile="2020C_courses_shopping_enabled
                     print("\t", canvas_id, sis_id, short_name, account_id, status)
                     update = False
                     in_SRS = linked_to_SRS(sis_id)
-                    if in_SRS == False:
+                    if not in_SRS:
                         print("\t not in SRS")
                         update = False
                     elif int(canvas_id) in SINGLE_SITES_TO_IGNORE:
                         print("\t single site to ignore")
 
                         update = False
-                    else:  # we know the course is connected to SRS and not a special ignore site
+                    else:
                         course_number = sis_id.split("-")[
                             1
                         ]  # need a way to double check this...!
@@ -1105,8 +1098,9 @@ def enable_course_shopping(inputfile, outputfile="2020C_courses_shopping_enabled
                             update = True
                         else:  # not SEAS
                             if int(account_id) in NURS_ACCOUNTS:
-                                # check course number - if course >= 600 then ignore
-                                # course_number = sis_id.split("-")[1] # need a way to double check this...!
+                                # check course number - if course >= 600 then
+                                # ignore course_number = sis_id.split("-")[1] #
+                                # need a way to double check this...!
                                 if int(course_number) <= 600:
                                     update = True
 
@@ -1158,12 +1152,12 @@ def disable_course_shopping(inputfile, outputfile):
     # once the enabled script has been tested , just copy n paste...
     # REMEBER TO FILL IN ANY BLANKS FOR THE COURSE_ID/NOTES!!!
 
-    # sub accounts that have opt-ed out these should be filtered out before running the script
-    # MEHP 132097 132098 132100 132099
-    # PSOM 99242
-    # SUB_ACCOUNTS = [132097, 132098, 132100, 132099, 99242] # you should remove these before running the script -- but i'll code it anyways just in case...
+    # sub accounts that have opt-ed out these should be filtered out before
+    # running the script MEHP 132097 132098 132100 132099 PSOM 99242
+    # SUB_ACCOUNTS = [132097, 132098, 132100, 132099, 99242] # you should remove
+    # these before running the script -- but i'll code it anyways just in
+    # case...
     canvas = Canvas(API_URL, API_KEY)
-    # canvas = Canvas("https://upenn.beta.instructure.com", "25~SEUFg2kAnCcarRFHAKTH1H7NIEFu7cEGeKrf2gNGkjAZTzElglrqGiVOlq5BfdKK")
     my_path = os.path.dirname(os.path.abspath(sys.argv[0]))
     file_path = os.path.join(my_path, "ACP/data", inputfile)
     dataFile = open(file_path, "r")
@@ -1188,14 +1182,15 @@ def disable_course_shopping(inputfile, outputfile):
             notes = "couldnt find course"
             published = "ERROR"
 
-        # if int(account_id) in SUB_ACCOUNTS: # then we should not update this site!!!!
-        #    notes += "/ subaccount opt out"
-        #    outFile.write("%s, %s, %s, %s, %s\n" % (sis_id, canvas_id, status, published, notes))
+        # if int(account_id) in SUB_ACCOUNTS: # then we should not update this
+        #    site!!!!  notes += "/ subaccount opt out" outFile.write("%s, %s,
+        #    %s, %s, %s\n" % (sis_id, canvas_id, status, published, notes))
 
         # else: # lets update this site babie
         try:
             # print('\t',visibility_status, visibility_status=='public_to_auth_users')
-            # if visibility_status == ' public_to_auth_users' or visibility_status='public_to_auth_users':
+            # if visibility_status == ' public_to_auth_users' or
+            # visibility_status='public_to_auth_users':
             canvas_course.update(
                 course={
                     "is_public": False,
@@ -1267,7 +1262,7 @@ def countEnrollments(
 
 def deleteCourses(inputfile="test2.txt"):
     canvas = Canvas(API_URL, API_KEY)
-    total = 439
+    # total = 439
     my_path = os.path.dirname(os.path.abspath(sys.argv[0]))
     file_path = os.path.join(my_path, "ACP/data", inputfile)
     dataFile = open(file_path, "r")

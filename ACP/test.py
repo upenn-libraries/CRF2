@@ -1,20 +1,16 @@
-# testing Provisioning process and other tests
 import os
 import sys
 from configparser import ConfigParser
 
 from canvasapi import Canvas
-
-from course.models import *
+from course.models import Activity, Course, School, Subject, User
 
 from .logger import canvas_logger, crf_logger
 
-# here are most of the basic API requests that should support the CRF
-
 config = ConfigParser()
 config.read("config/config.ini")
-domain = config.get("canvas", "prod_env")  #'prod_env')
-key = config.get("canvas", "prod_key")  #'prod_key')
+domain = config.get("canvas", "prod_env")
+key = config.get("canvas", "prod_key")
 
 
 """
@@ -24,9 +20,6 @@ key = config.get("canvas", "prod_key")  #'prod_key')
 >>> from ACP.canvas_sites import *
 >>> create_requests(inputfile='test_out.txt')
 """
-
-
-################# OTHER  #################
 
 
 def test_reading(file):
@@ -39,9 +32,6 @@ def test_reading(file):
 def test_log():
     canvas_logger.info("canvas test")
     crf_logger.info("crf test?!")
-
-
-############ CREATING TEST DATA ############
 
 
 def create_test_courses(section_number):

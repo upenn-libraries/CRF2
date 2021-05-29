@@ -1,18 +1,15 @@
-import datetime
 import os
 import sys
 from configparser import ConfigParser
 
 from canvasapi import Canvas
-from canvasapi.exceptions import CanvasException
 
 config = ConfigParser()
 config.read("config/config.ini")
-API_URL = config.get("canvas", "prod_env")  #'prod_env')
-API_KEY = config.get("canvas", "prod_key")  #'prod_key')
+API_URL = config.get("canvas", "prod_env")
+API_KEY = config.get("canvas", "prod_key")
 
 
-########### HELPERS ################
 def code_to_sis(course_code):
     middle = course_code[:-5][-6:]
     sis_id = "SRS_%s-%s-%s %s" % (
@@ -23,8 +20,6 @@ def code_to_sis(course_code):
     )
     return sis_id
 
-
-####################################
 
 # course.create_group_category()
 # https://canvas.instructure.com/doc/api/group_categories.html#method.group_categories.create

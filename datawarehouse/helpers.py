@@ -1,16 +1,8 @@
-# myscript.py
 from __future__ import print_function
 
-import logging
-import re
-import string
 from configparser import ConfigParser
 
 import cx_Oracle
-
-from course import utils
-from course.models import *
-from OpenData.library import *
 
 
 ######
@@ -67,7 +59,8 @@ def is_canceled(course_code):
     X      The course section has been cancelled
     """
     middle = course_code[:-5][4:]
-    # return("%s-%s-%s %s" % (coursecode[:-11], middle[:3],middle[3:], coursecode[-5:] ))
+    # return("%s-%s-%s %s" % (coursecode[:-11], middle[:3],middle[3:],
+    # coursecode[-5:] ))
     subject = course_code[:-11]
     course_number = middle[:3]
     course_section = middle[3:]

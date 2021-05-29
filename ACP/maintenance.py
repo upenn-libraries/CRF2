@@ -1,35 +1,21 @@
-"""
-This code is to help do some maintence in the CRF and  in Canvas
-
-"""
-
 import datetime
 import os
 import sys
 from configparser import ConfigParser
 
-import requests
 from canvasapi import Canvas
-from canvasapi.exceptions import CanvasException
+from course.models import CanvasSite, Course, Request, User
+from datawarehouse.helpers import is_canceled
 from dateutil import tz
-
-from course.models import *
-from datawarehouse import datawarehouse
-from datawarehouse.helpers import *
-
-from .logger import canvas_logger, crf_logger
 
 config = ConfigParser()
 config.read("config/config.ini")
-API_URL = config.get("canvas", "prod_env")  #'prod_env')
-API_KEY = config.get("canvas", "prod_key")  #'prod_key')
+API_URL = config.get("canvas", "prod_env")
+API_KEY = config.get("canvas", "prod_key")
 
 headers = {
     "Authorization": "Bearer " + API_KEY,
 }
-
-
-################ HELPERS ################
 
 
 def get_or_none(classmodel, **kwargs):
@@ -98,25 +84,21 @@ def canvastime_to_datetime(time_str):
     ).replace(tzinfo=tz.UTC)
 
 
-################ MAIN CODE ################
+# def create_instructor_updates(yearterm):
+#     term = yearterm[-1]
+#     year = yearterm[:-1]
+#     requests = Request.objects.filter(
+#         course_requested__course_term=term, course_requested__year=year
+#     )
+# my_path = os.path.dirname(os.path.abspath(sys.argv[0]))
+# file_path = os.path.join(my_path, "ACP/data/", outputfile)
+# f = open(file_path, "w+")
+# for r in requests:
+#     course = r.course_requested
 
-## FINISH
-def create_instructor_updates(yearterm):
-    term = yearterm[-1]
-    year = yearterm[:-1]
-    requests = Request.objects.filter(
-        course_requested__course_term=term, course_requested__year=year
-    )
-    my_path = os.path.dirname(os.path.abspath(sys.argv[0]))
-    file_path = os.path.join(my_path, "ACP/data/", outputfile)
-    f = open(file_path, "w+")
-    for r in requests:
-        course = r.course_requested
-
-    pass
+# pass
 
 
-##FINISH
 def unpublish_sites(
     inputfile="canvasSitesFile.txt", outputfile="unpublishedResults.txt"
 ):
@@ -151,7 +133,7 @@ def check_crf_canceled(yearterm, outputfile="checkingCanceled.txt"):
     for r in requests:
         course = r.course_requested
         is_cancel = is_canceled(course.course_code)
-        if is_cancel == True:
+        if is_cancel:
             f.write("CANCELED:%s\n" % course.course_code)
         if is_cancel == "ERROR":
             f.write("ERROR:%s\n" % course.course_code)
@@ -173,42 +155,39 @@ def check_file_canceled(
             is_canceled_status = is_canceled(id, use_sis_id)
         except:
             is_canceled_status = None
-        if is_canceled_status == True:
+        if is_canceled_status:
             outFile.write("CANCELED,%s\n" % id)
         else:
             outFile.write("OPEN,%s\n" % id)
 
-
-## FINISH
-def recreate_deleted_requests(inputfile="checkingCanceled.txt"):
-    """
-    recreate requests that were accidentally deleted and set a message about it
-    """
-    canvas = Canvas(API_URL, API_KEY)
-    my_path = os.path.dirname(os.path.abspath(sys.argv[0]))
-    file_path = os.path.join(my_path, "ACP/data", inputfile)
-    dataFile = open(file_path, "r")
-    for line in dataFile:
+        # def recreate_deleted_requests(inputfile="checkingCanceled.txt"):
+        #     """
+        #     recreate requests that were accidentally deleted and set a message
+        #     about it
+        #     """
+        # canvas = Canvas(API_URL, API_KEY)
+        # my_path = os.path.dirname(os.path.abspath(sys.argv[0]))
+        # file_path = os.path.join(my_path, "ACP/data", inputfile)
+        # dataFile = open(file_path, "r")
+        # for line in dataFile:
         id = line.replace("\n", "").replace("ERROR:", "").replace("CANCELED:", "")
-        crf_course = get_or_none(Course, course_code=id)
-        sis_id = "SRS_" + crf_course.srs_format()
-        canvas_crf_obj = get_or_none(CanvasSite, sis_course_id=sis_id)
-        canvas_site = canvas.get_course(sis_id, use_sis_id=True)
-        if crf_course and canvas_crf_obj and canvas_site:
-            r = Request.objects.create(
-                course_requested=course,
-                copy_from_course=copy_site,
-                additional_instructions="Accidentally deleted and recreated for archiving, contact courseware support for info",
-                owner=owner,
-                created=datetime.datetime.now(),
-                status="COMPLETED",
-            )
-        else:
-            #
-            pass
-
-
-# 2020-03-09
+        # crf_course = get_or_none(Course, course_code=id)
+        # sis_id = "SRS_" + crf_course.srs_format()
+        # canvas_crf_obj = get_or_none(CanvasSite, sis_course_id=sis_id)
+        # canvas_site = canvas.get_course(sis_id, use_sis_id=True)
+        # if crf_course and canvas_crf_obj and canvas_site:
+        #     r = Request.objects.create(
+        #         course_requested=course,
+        #         copy_from_course=copy_site,
+        #         additional_instructions="Accidentally deleted and recreated
+        #         for archiving, contact courseware support for info",
+        #         owner=owner,
+        #         created=datetime.datetime.now(),
+        #         status="COMPLETED",
+        #     )
+        # else:
+        #     #
+        #     pass
 
 
 def update_accidentally_deleted_crf(
@@ -254,11 +233,16 @@ def update_accidentally_deleted_crf(
                     r = Request.objects.create(
                         course_requested=course,
                         copy_from_course="",
-                        additional_instructions="Created automatically, contact courseware support for info",
+                        additional_instructions=(
+                            "Created automatically, contact courseware support for info"
+                        ),
                         owner=owner,
                         created=canvastime_to_datetime(canvas_course.created_at),
                         status="COMPLETED",
-                        admin_additional_instructions="Request accidentally deleted and recreated. See Maddy for details",
+                        admin_additional_instructions=(
+                            "Request accidentally deleted and recreated. See "
+                            "Maddy for details"
+                        ),
                         canvas_instance=crf_canvas_site,
                     )
                     course.save()
@@ -281,10 +265,7 @@ def update_accidentally_deleted_crf(
             )
             for other_course in other_courses:
                 # check if requested == true n if not then update
-                if (
-                    other_course.requested == True
-                    or other_course.requested_override == True
-                ):
+                if other_course.requested or other_course.requested_override:
                     pass
                 else:
                     # point it to the request
@@ -332,7 +313,8 @@ def update_not_in_crf(yearterm):
 
 def check_requests(yearterm):
     """
-    for a given term make sure that if a crosslisted course is requested that it has its secondary pointing to the request.
+    for a given term make sure that if a crosslisted course is requested that it
+    has its secondary pointing to the request.
     """
     term = yearterm[-1]
     year = yearterm[:-1]
@@ -430,7 +412,9 @@ def reactivate_canceled(inputfile="crying.txt"):
                 except:
                     print("failed %s" % e.id)
                     # PUT /api/v1/courses/:course_id/enrollments/:id/reactivate
-                    # response = requests.post("https://canvas.upenn.edu/api/v1/courses/1494344/enrollments/%s/reactivate" % e.id
+                    # response =
+                    # requests.post("https://canvas.upenn.edu/api/v1/courses/1494344/enrollments/%s/reactivate"
+                    # % e.id
 
         except:
             print("%s error" % sis_id)

@@ -1,24 +1,14 @@
-import datetime
 import os
 import sys
 from configparser import ConfigParser
 
 from canvasapi import Canvas
-from canvasapi.exceptions import CanvasException
-
-from course.models import *
-from datawarehouse import datawarehouse
-from datawarehouse.helpers import *
-
-from .logger import canvas_logger, crf_logger
+from course.models import Request
 
 config = ConfigParser()
 config.read("config/config.ini")
-API_URL = config.get("canvas", "prod_env")  #'prod_env')
-API_KEY = config.get("canvas", "prod_key")  #'prod_key')
-
-
-########### HELPERS ################
+API_URL = config.get("canvas", "prod_env")
+API_KEY = config.get("canvas", "prod_key")
 
 
 def code_to_sis(course_code):
@@ -30,9 +20,6 @@ def code_to_sis(course_code):
         course_code[-5:],
     )
     return sis_id
-
-
-####################################
 
 
 def get_requests(outputfile="RequestSummary.csv"):

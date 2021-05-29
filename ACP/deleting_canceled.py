@@ -1,23 +1,13 @@
-import datetime
 import os
 import sys
 from configparser import ConfigParser
 
-import requests
 from canvasapi import Canvas
-from canvasapi.exceptions import CanvasException
-from dateutil import tz
-
-from course.models import *
-from datawarehouse import datawarehouse
-from datawarehouse.helpers import *
-
-from .logger import canvas_logger, crf_logger
 
 config = ConfigParser()
 config.read("config/config.ini")
-API_URL = config.get("canvas", "prod_env")  #'prod_env')
-API_KEY = config.get("canvas", "prod_key")  #'prod_key')
+API_URL = config.get("canvas", "prod_env")
+API_KEY = config.get("canvas", "prod_key")
 
 
 def code_to_sis(course_code):
@@ -50,21 +40,20 @@ def find_delete_courses(inputfile="deletelist.txt", outputfile="deletelistSTATUS
             for s in student_enrollments:
                 # print("COURSE:", s , sis_id)
                 delete = False
-            if delete == False:
+            if not delete:
                 outFile.write("course, %s, activte\n" % sis_id)
             else:
                 outFile.write("course, %s, inactivte\n" % sis_id)
         except:
             # lets see if it exists as a section
             try:
-                section = canvas.get_section(sis_id, use_sis_id=True)
                 student_enrollments = canvas_course.get_enrollments(
                     type="StudentEnrollment"
                 )
                 for s in student_enrollments:
                     # print("SECTION:", s , sis_id)
                     delete = False
-                if delete == False:
+                if not delete:
                     outFile.write("section, %s, activte\n" % sis_id)
                 else:
                     outFile.write("section, %s, inactivte\n" % sis_id)

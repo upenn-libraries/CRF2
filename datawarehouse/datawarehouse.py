@@ -8,8 +8,8 @@ from string import capwords
 
 import cx_Oracle
 from course import utils
-from course.models import *
-from OpenData.library import *
+from course.models import Activity, Course, Profile, School, Subject, User
+from OpenData.library import OpenData
 
 
 def get_cursor():
@@ -73,7 +73,9 @@ def pull_courses(term):
     FROM
       dwadmin.course_section cs
     WHERE
-      cs.activity IN ('LEC', 'REC', 'LAB', 'SEM', 'CLN', 'CRT', 'PRE', 'STU', 'ONL', 'HYB')
+      cs.activity IN (
+        'LEC', 'REC', 'LAB', 'SEM', 'CLN', 'CRT', 'PRE', 'STU', 'ONL', 'HYB'
+        )
     AND cs.tuition_school NOT IN ('WH', 'LW')
     AND cs.status in ('O')
     AND cs.term = :term""",
@@ -172,26 +174,27 @@ def pull_courses(term):
                 title = roman_title(title)
             year = term[:4]
 
-            course = Course.objects.create(
-                owner=User.objects.get(username="mfhodges"),
-                course_term=term[-1],
-                course_activity=activity,
-                course_code=course_code,
-                course_subject=subject,
-                course_primary_subject=primary_subject,
-                primary_crosslist=primary_crosslist,
-                course_schools=school,
-                course_number=course_number,
-                course_section=section_number,
-                course_name=title,
-                year=year,
-            )
+            # course = Course.objects.create(
+            #     owner=User.objects.get(username="mfhodges"),
+            #     course_term=term[-1],
+            #     course_activity=activity,
+            #     course_code=course_code,
+            #     course_subject=subject,
+            #     course_primary_subject=primary_subject,
+            #     primary_crosslist=primary_crosslist,
+            #     course_schools=school,
+            #     course_number=course_number,
+            #     course_section=section_number,
+            #     course_name=title,
+            #     year=year,
+            # )
 
         except Exception as e:
             # check if updates !
             # 1. check if the course exists
             #   a. find the course
-            #   b. check if the primary_crosslist and course_primary_subject needs to be updated
+            #   b. check if the primary_crosslist and course_primary_subject
+            #   needs to be updated
             #   c. update the crosslistings?
             #
             # 2. if doesnt exist -- report error
@@ -215,7 +218,8 @@ def pull_courses(term):
 
             # course doesnt already exist
             #    print(type(e),e.__cause__)
-            #    #getLogger("error_logger").error("couldnt add course %s ",datum["section_id"])
+            #    #getLogger("error_logger").error("couldnt add course %s
+            #    #",datum["section_id"])
     print("DONE LOADING COURSES")
 
     # check if it already exists
@@ -245,7 +249,7 @@ def pull_instructors(term):
         course_code = (section_id + term).replace(" ", "")
         try:
             course = Course.objects.get(course_code=course_code)
-            if course.requested == False:
+            if course.requested:
                 try:
                     instructor = User.objects.get(username=pennkey)
                 except:
@@ -267,7 +271,10 @@ def pull_instructors(term):
                     except:
                         NEW_INSTRUCTOR_VALUES[course_code] = [instructor]
                 else:
-                    message = f"Couldn't create account for: {first_name} {last_name} | {pennkey} | {penn_id} | {email}"
+                    message = (
+                        f"Couldn't create account for: {first_name} "
+                        f"{last_name} | {pennkey} | {penn_id} | {email}"
+                    )
                     getLogger("error_logger").error(message)
         except:
             message = f"Couldn't find course {course_code}"
@@ -281,7 +288,7 @@ def pull_instructors(term):
                 course.instructors.add(instructor)
             course.save()
         except:
-            message = f"Error adding new instructor(s) to course"
+            message = "Error adding new instructor(s) to course"
             getLogger("error_logger").error(message)
 
 
@@ -305,8 +312,7 @@ def available_terms():
 def daily_sync(term):
     pull_courses(term)
     pull_instructors(term)
-    # crosslisting_cleanup() -- check that for every course with a primary crosslisting that its actually crosslisted with that course
-    utils.process_canvas()  # -- for each user check if they have any Canvas sites that arent in the CRF yet
+    utils.process_canvas()
     utils.update_sites_info(
         term
     )  # info # -- for each Canvas Site in the CRF check if its been altered
@@ -314,8 +320,7 @@ def daily_sync(term):
 
 
 def delete_canceled_courses(term):
-    open_data = get_open_data()
-    cursor = get_curosr()
+    cursor = get_cursor()
     cursor.execute(
         """
     SELECT
@@ -336,7 +341,9 @@ def delete_canceled_courses(term):
     FROM
       dwadmin.course_section cs
     WHERE
-      cs.activity IN ('LEC', 'REC', 'LAB', 'SEM', 'CLN', 'CRT', 'PRE', 'STU', 'ONL', 'HYB')
+      cs.activity IN (
+        'LEC', 'REC', 'LAB', 'SEM', 'CLN', 'CRT', 'PRE', 'STU', 'ONL', 'HYB'
+        )
     AND cs.status IN ('X')
     AND cs.tuition_school NOT IN ('WH', 'LW')
     AND cs.term= :term""",
@@ -362,15 +369,17 @@ def delete_canceled_courses(term):
         status,
         rev,
     ) in cursor:
-        # print(course_code, section_id, term, subject_area, school, xc, xc_code, activity, section_dept,section_division, title,status, rev)
+        # print(course_code, section_id, term, subject_area, school, xc,
+        # xc_code, activity, section_dept,section_division, title,status, rev)
         course_code = course_code.replace(" ", "")
         subject_area = subject_area.replace(" ", "")
         xc_code = xc_code.replace(" ", "")
 
         try:
             course = Course.objects.get(course_code=course_code)
-            if course.requested == True:
-                # does this course have course.request , course.multisection_request or course.crosslisted_request
+            if course.requested:
+                # does this course have course.request ,
+                # course.multisection_request or course.crosslisted_request
                 try:
                     canvas_site = course.request.canvas_instance
                 except:
