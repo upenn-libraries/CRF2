@@ -3,10 +3,9 @@ import logging
 from configparser import ConfigParser
 
 from django.core.management.base import BaseCommand
-from django.utils.crypto import get_random_string
 
 from course.models import School, Subject
-from OpenData.library import *
+from OpenData.library import OpenData
 
 config = ConfigParser()
 config.read("config/config.ini")
@@ -198,7 +197,8 @@ def update_school_subj():
 
         for school in school_data:
             create_instance('schools', school)
-            subjects = school_subj_map[school["opendata_abbr"]] # list of the dept/subject abbr in that school
+            subjects = school_subj_map[school["opendata_abbr"]] # list of the
+            dept/subject abbr in that school
             for subj in subjects:
                 subject_data  = {
                     "abbreviation": subj,
@@ -218,7 +218,8 @@ class Command(BaseCommand):
     name = models.CharField(max_length=50, unique=True)
     abbreviation = models.CharField(max_length=10,unique=True, primary_key=True)
     visible = models.BooleanField(default=True)
-    schools = models.ForeignKey(School,related_name='subjects', on_delete=models.CASCADE, blank=True,null=True)
+    schools = models.ForeignKey(School,related_name='subjects',
+    on_delete=models.CASCADE, blank=True,null=True)
     """
 
     def add_arguments(self, parser):
@@ -229,9 +230,12 @@ class Command(BaseCommand):
             "-l", "--localstore", action="store_true", help="pull from Local Store"
         )
 
-        # parser.add_argument('-p', '--prefix', type=str, help='Define a username prefix')
-        # parser.add_argument('-a', '--admin', action='store_true', help='Create an admin account')
-        # parser.add_argument('-c', '--courseware', action='store_true', help='Quick add Courseware Support team as Admins')
+        # parser.add_argument('-p', '--prefix', type=str, help='Define a
+        # username prefix')
+        # parser.add_argument('-a', '--admin', action='store_true', help='Create
+        # an admin account')
+        # parser.add_argument('-c', '--courseware', action='store_true',
+        # help='Quick add Courseware Support team as Admins')
 
     def handle(self, *args, **kwargs):
         # courseware = kwargs['courseware']
@@ -280,7 +284,8 @@ class Command(BaseCommand):
         else:
             with open("OpenData/OpenData.txt") as json_file:
                 data = json.load(json_file)
-                # print(data.keys()) =dict_keys(['activity_map', 'departments', 'programs', 'school_subj_map'])
+                # print(data.keys()) =dict_keys(['activity_map', 'departments',
+                # 'programs', 'school_subj_map'])
                 """
                 steps
                 1. iterate through school subj mapping and take each school abbr "AS"
@@ -304,7 +309,7 @@ class Command(BaseCommand):
                     print(subjs)
                     for subj in subjs:
                         # need to see if exists
-                        if Subject.objects.filter(abbreviation=subj).exists() == False:
+                        if not Subject.objects.filter(abbreviation=subj).exists():
                             try:
                                 subj_name = data["departments"][subj]
                                 Subject.objects.create(

@@ -4,11 +4,10 @@ import sys
 from configparser import ConfigParser
 
 from django.core.management.base import BaseCommand
-from django.utils.crypto import get_random_string
 
-from course.models import *
-from course.utils import *
-from OpenData.library import *
+from course.models import Activity, Course, School, Subject, User
+from course.utils import find_or_create_user
+from OpenData.library import OpenData
 
 # https://realpython.com/python-logging/
 
@@ -30,17 +29,21 @@ class Command(BaseCommand):
     """
     FROM MODELS
         course_term = models.CharField(
-            max_length=1,choices = TERM_CHOICES,) # self.course_term would == self.SPRING || self.FALL || self.SUMMER
+            max_length=1,choices = TERM_CHOICES,) # self.course_term would ==
+            self.SPRING || self.FALL || self.SUMMER
         course_activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
-        course_code = models.CharField(max_length=150,unique=True, primary_key=True, editable=False) # unique and primary_key means that is the lookup_field
-        course_subject = models.ForeignKey(Subject,on_delete=models.CASCADE,related_name='courses') # one to many
+        course_code = models.CharField(max_length=150,unique=True,
+            primary_key=True, editable=False)
+        course_subject =
+            models.ForeignKey(Subject,on_delete=models.CASCADE,related_name='courses')
         course_primary_subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
-        course_schools = models.ManyToManyField(School,related_name='courses')# one to many
+        course_schools = models.ManyToManyField(School,related_name='courses')
         course_number = models.CharField(max_length=4, blank=False)
-        course_section = models.CharField(max_length=4,blank=False)# can courses not have associated sections?
-        course_name = models.CharField(max_length=250) # Human Readable Name i.e. Late Antique Arts
+        course_section = models.CharField(max_length=4,blank=False)
+        course_name = models.CharField(max_length=250)
         year = models.CharField(max_length=4,blank=False)
-        crosslisted = models.ManyToManyField("self", blank=True, symmetrical=True, default=None)
+        crosslisted = models.ManyToManyField("self", blank=True,
+            symmetrical=True, default=None)
         requested =  models.BooleanField(default=False)# False -> not requested
     """
 
@@ -55,15 +58,19 @@ class Command(BaseCommand):
             "-l", "--localstore", action="store_true", help="pull from Local Store"
         )  # not
 
-        # parser.add_argument('-p', '--prefix', type=str, help='Define a username prefix')
-        # parser.add_argument('-a', '--admin', action='store_true', help='Create an admin account')
-        # parser.add_argument('-c', '--courseware', action='store_true', help='Quick add Courseware Support team as Admins')
+        # parser.add_argument('-p', '--prefix', type=str, help='Define a
+        # username prefix')
+        # parser.add_argument('-a', '--admin', action='store_true', help='Create
+        # an admin account')
+        # parser.add_argument('-c', '--courseware', action='store_true',
+        # help='Quick add Courseware Support team as Admins')
 
         # Need to check to see if updates need to be done
         #
 
     def handle(self, *args, **kwargs):
-        # logging.basicConfig(filename='course_add.log', format='%(name)s - %(levelname)s - %(message)s')
+        # logging.basicConfig(filename='course_add.log', format='%(name)s -
+        # %(levelname)s - %(message)s')
         # courseware = kwargs['courseware']
         opendata = kwargs["opendata"]
         year_term = kwargs["term"]
@@ -82,15 +89,15 @@ class Command(BaseCommand):
             print("data", data)
             page = 1
 
-            while data != None:
+            while data is not None:
 
                 print("\n\tSTARTING PAGE : ", page, "\n")
                 if data == "ERROR":
                     print("ERROR")
                     sys.exit()
-                if isinstance(
-                    data, dict
-                ):  # sometimes the data passed back can be a single course and in that case it should be put in a list
+                # sometimes the data passed back can be a single course and in
+                # that case it should be put in a list
+                if isinstance(data, dict):
                     data = [data]
 
                 for datum in data:
@@ -194,9 +201,7 @@ class Command(BaseCommand):
                         if update_course:
                             print("already exists: ", datum["section_id"] + year_term)
                             # lets check for Updates
-                            if (
-                                datum["is_cancelled"] == True
-                            ):  # canceled course ? lets delete
+                            if datum["is_cancelled"]:  # canceled course ? lets delete
                                 update_course.delete()
                             else:
                                 update_course.name = datum["course_title"]
@@ -262,7 +267,8 @@ class Command(BaseCommand):
         else:
             with open("OpenData/OpenData.txt") as json_file:
                 data = json.load(json_file)
-                # print(data.keys()) =dict_keys(['activity_map', 'departments', 'programs', 'school_subj_map'])
+                # print(data.keys()) =dict_keys(['activity_map', 'departments',
+                # 'programs', 'school_subj_map'])
                 """
                 steps
                 1. iterate through school subj mapping and take each school abbr "AS"
@@ -283,7 +289,7 @@ class Command(BaseCommand):
                     print(subjs)
                     for subj in subjs:
                         # need to see if exists
-                        if Subject.objects.filter(abbreviation=subj).exists() == False:
+                        if not Subject.objects.filter(abbreviation=subj).exists():
                             try:
                                 subj_name = data["departments"][subj]
                                 Subject.objects.create(

@@ -13,6 +13,7 @@ import sys
 from configparser import ConfigParser
 
 from canvasapi import Canvas
+
 from course.models import Course, Request, User
 from course.tasks import create_canvas_site
 

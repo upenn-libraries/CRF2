@@ -1,22 +1,18 @@
-from course.models import *
-from django.core.management.base import BaseCommand
-from crf2.settings import BASE_DIR
-from django.utils.crypto import get_random_string
-from course.utils import *
-from configparser import ConfigParser
-import json
-from OpenData.library import *
-from canvasapi import Canvas
-import logging
-import sys
-import os
 import csv
+import json
+import logging
 import os
 import sys
+from configparser import ConfigParser
 
+from canvasapi import Canvas
 from django.core.management.base import BaseCommand
+from django.utils.crypto import get_random_string
 
 from course.models import *
+from course.utils import *
+from crf2.settings import BASE_DIR
+from OpenData.library import *
 
 config = ConfigParser()
 config.read("config/config.ini")

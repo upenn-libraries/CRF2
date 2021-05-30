@@ -1,7 +1,6 @@
 from configparser import ConfigParser
 
 from django.core.management.base import BaseCommand
-from django.utils.crypto import get_random_string
 
 from course.models import School
 
@@ -124,8 +123,10 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         pass
-        # parser.add_argument('-p', '--prefix', type=str, help='Define a username prefix')
-        # parser.add_argument('-a', '--admin', action='store_true', help='Create an admin account')
+        # parser.add_argument('-p', '--prefix', type=str, help='Define a
+        # username prefix')
+        # parser.add_argument('-a', '--admin', action='store_true', help='Create
+        # an admin account')
         parser.add_argument(
             "-q",
             "--quick",
@@ -145,9 +146,8 @@ class Command(BaseCommand):
         canvas_subaccount = models.IntegerField(null=True)
         """
         for school in school_data:
-            if (
+            if not (
                 School.objects.filter(abbreviation=school["abbreviation"]).exists()
-                == False
             ):
                 if school.get("canvas_subaccount"):
                     print(school)

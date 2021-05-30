@@ -3,6 +3,7 @@ import sys
 from configparser import ConfigParser
 
 from canvasapi import Canvas
+
 from course.models import Activity, Course, School, Subject, User
 
 from .logger import canvas_logger, crf_logger

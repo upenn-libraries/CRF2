@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from django.utils.crypto import get_random_string
 
-from course.models import *
+from course.models import Profile
 
 config = ConfigParser()
 config.read("config/config.ini")
@@ -35,7 +35,10 @@ class Command(BaseCommand):
             "-d",
             "--department",
             type=int,
-            help="add all employees with a certian PRIMARY_DEPT_ORG code (5032 & 5009 is TRL)",
+            help=(
+                "add all employees with a certian PRIMARY_DEPT_ORG code (5032 &"
+                "5009 is TRL)"
+            ),
         )
 
     def handle(self, *args, **kwargs):
