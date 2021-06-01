@@ -22,15 +22,18 @@ from django.utils.datastructures import MultiValueDict
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.generic import TemplateView
-from django_celery_beat.models import (CrontabSchedule, IntervalSchedule,
-                                       PeriodicTask)
+from django_celery_beat.models import CrontabSchedule, IntervalSchedule, PeriodicTask
 from django_filters import rest_framework as filters
 from rest_framework import generics, permissions, status, viewsets
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import (SAFE_METHODS, BasePermission,
-                                        IsAdminUser, IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly)
+from rest_framework.permissions import (
+    SAFE_METHODS,
+    BasePermission,
+    IsAdminUser,
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
+)
 from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
@@ -40,8 +43,13 @@ from rest_framework.views import APIView
 
 from canvas import api as canvas_api
 from course import email_processor, utils, views
-from course.forms import (CanvasSiteForm, ContactForm, EmailChangeForm,
-                          SubjectForm, UserForm)
+from course.forms import (
+    CanvasSiteForm,
+    ContactForm,
+    EmailChangeForm,
+    SubjectForm,
+    UserForm,
+)
 from course.models import *  # Course, Notice, Request, School, Subject, AutoAdd
 from course.permissions import IsOwnerOrReadOnly
 from course.serializers import *  # CourseSerializer, UserSerializer, NoticeSerializer, RequestSerializer, SchoolSerializer, SubjectSerializer, AutoAddSerializer
