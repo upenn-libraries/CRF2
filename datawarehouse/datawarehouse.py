@@ -189,7 +189,7 @@ def pull_courses(term):
                 title = roman_title(title)
             year = term[:4]
 
-            course = Course.objects.create(
+            course = Course.objects.update_or_create(
                 owner=User.objects.get(username="mfhodges"),
                 course_term=term[-1],
                 course_activity=activity,
