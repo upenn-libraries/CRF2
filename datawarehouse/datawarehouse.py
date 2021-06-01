@@ -246,11 +246,18 @@ def pull_instructors(term):
 
     NEW_INSTRUCTOR_VALUES = dict()
 
+    CLEAR_COURSE_LIST = Course.objects.filter(
+        requested=False, course_term=term[-1], year=term[:4]
+    )
+
+    FOUND_COURSE_LIST = list()
+
     for first_name, last_name, pennkey, penn_id, email, section_id in cursor:
         course_code = (section_id + term).replace(" ", "")
         try:
             course = Course.objects.get(course_code=course_code)
-            if course.requested:
+            if not course.requested:
+                FOUND_COURSE_LIST.append(course_code)
                 try:
                     instructor = User.objects.get(username=pennkey)
                 except:
@@ -291,6 +298,9 @@ def pull_instructors(term):
         except:
             message = "Error adding new instructor(s) to course"
             getLogger("error_logger").error(message)
+
+    print(f"Length of CLEAR_COURSE_LIST: {len(CLEAR_COURSE_LIST)}")
+    print(f"Length of FOUND_COURSE_LIST: {len(FOUND_COURSE_LIST)}")
 
 
 def available_terms():
