@@ -227,23 +227,24 @@ def pull_courses(term):
             #   c. update the crosslistings?
             #
             # 2. if doesnt exist -- report error
-            print(
-                {
-                    "course_term": term,
-                    "course_activity": activity,
-                    "course_code": course_code,
-                    "course_subject": subject,
-                    "course_primary_subject": primary_subject,
-                    "primary_crosslist": primary_crosslist,
-                    "course_schools": school,
-                    "course_number": course_number,
-                    "course_section": section_number,
-                    "course_name": title,
-                    "year": year,
-                }
-            )
+            # print(
+            #     {
+            #         "course_term": term,
+            #         "course_activity": activity,
+            #         "course_code": course_code,
+            #         "course_subject": subject,
+            #         "course_primary_subject": primary_subject,
+            #         "primary_crosslist": primary_crosslist,
+            #         "course_schools": school,
+            #         "course_number": course_number,
+            #         "course_section": section_number,
+            #         "course_name": title,
+            #         "year": year,
+            #     }
+            # )
 
             print(type(e), e.__cause__)
+            print(e)
 
             # course doesnt already exist
             #    print(type(e),e.__cause__)
