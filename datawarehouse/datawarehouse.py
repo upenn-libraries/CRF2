@@ -118,8 +118,8 @@ def pull_courses(term):
         primary_crosslist = ""
         subject_area = subject_area.replace(" ", "")
         xc_code = xc_code.replace(" ", "")
-        print("subject_area", subject_area)
-        print("adding ", course_code)
+        # print("subject_area", subject_area)
+        # print("adding ", course_code)
         try:
             subject = Subject.objects.get(abbreviation=subject_area)
         except:
@@ -134,7 +134,8 @@ def pull_courses(term):
                         abbreviation=subject_area, name=subject_area, schools=school
                     )
                 except:
-                    print("couldn't find school ", school_code)
+                    # print("couldn't find school ", school_code)
+                    pass
 
         # check if this course is crosslisted with anything
         if xc:  # xc can be 'S', 'P' or None
@@ -154,7 +155,7 @@ def pull_courses(term):
                     abbreviation=p_subj, name=p_subj, schools=school
                 )
         else:
-            print("crosslist_primary", xc_code, "not found")
+            # print("crosslist_primary", xc_code, "not found")
             primary_subject = subject
 
         school = primary_subject.schools
@@ -175,20 +176,34 @@ def pull_courses(term):
                 title = roman_title(title)
             year = term[:4]
 
-            # course = Course.objects.create(
-            #     owner=User.objects.get(username="mfhodges"),
-            #     course_term=term[-1],
-            #     course_activity=activity,
-            #     course_code=course_code,
-            #     course_subject=subject,
-            #     course_primary_subject=primary_subject,
-            #     primary_crosslist=primary_crosslist,
-            #     course_schools=school,
-            #     course_number=course_number,
-            #     course_section=section_number,
-            #     course_name=title,
-            #     year=year,
-            # )
+            course = Course.objects.update_or_create(
+                course_code=course_code,
+                defaults={
+                    "owner": User.objects.get(username="mfhodges"),
+                    "course_term": term[-1],
+                    "course_activity": activity,
+                    "course_code": course_code,
+                    "course_subject": subject,
+                    "course_primary_subject": primary_subject,
+                    "primary_crosslist": primary_crosslist,
+                    "course_schools": school,
+                    "course_number": course_number,
+                    "course_section": section_number,
+                    "course_name": title,
+                    "year": year,
+                },
+            )
+            # print({'course_term' : term,
+            #'course_activity' : activity,
+            #'course_code' : course_code,
+            #'course_subject' : subject,
+            #'course_primary_subject' : primary_subject,
+            #'primary_crosslist' : primary_crosslist,
+            #'course_schools' : school,
+            #'course_number' : course_number,
+            #'course_section' : section_number,
+            #'course_name' : title,
+            #'year' :year})
 
         except Exception as e:
             # check if updates !
@@ -215,7 +230,7 @@ def pull_courses(term):
                 }
             )
 
-            print(type(e), e.__cause__)
+            print(type(e), e.__cause__, e)
 
             # course doesnt already exist
             #    print(type(e),e.__cause__)
