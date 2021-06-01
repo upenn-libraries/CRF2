@@ -257,7 +257,6 @@ def pull_instructors(term):
         try:
             course = Course.objects.get(course_code=course_code)
             if not course.requested:
-                FOUND_COURSE_LIST.append(course_code)
                 try:
                     instructor = User.objects.get(username=pennkey)
                 except:
@@ -289,6 +288,7 @@ def pull_instructors(term):
             getLogger("error_logger").error(message)
 
     for course_code, instructors in NEW_INSTRUCTOR_VALUES.items():
+        FOUND_COURSE_LIST.append(course_code)
         try:
             course = Course.objects.get(course_code=course_code)
             course.instructors.clear()
