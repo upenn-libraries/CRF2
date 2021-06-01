@@ -126,15 +126,15 @@ def pull_courses(term):
         primary_crosslist = ""
         subject_area = subject_area.replace(" ", "")
         xc_code = xc_code.replace(" ", "")
-        print("subject_area", subject_area)
-        print("adding ", course_code)
+        # print("subject_area", subject_area)
+        # print("adding ", course_code)
         try:
             subject = Subject.objects.get(abbreviation=subject_area)
         except:
             logging.getLogger("error_logger").error(
                 "couldnt find subject %s ", subject_area
             )
-            print("trouble finding subject: ", subject_area)
+            # print("trouble finding subject: ", subject_area)
             school_code = OData_lookup.find_school_by_subj(subject_area)
             if school_code:
                 try:
@@ -144,7 +144,8 @@ def pull_courses(term):
                         abbreviation=subject_area, name=subject_area, schools=school
                     )
                 except:
-                    print("couldn't find school ", school_code)
+                    # print("couldn't find school ", school_code)
+                    pass
 
         # check if this course is crosslisted with anything
         if xc:  # xc can be 'S', 'P' or None
@@ -159,14 +160,14 @@ def pull_courses(term):
                 logging.getLogger("error_logger").error(
                     "couldnt find subject %s ", p_subj
                 )
-                print("trouble finding primary subject: ", p_subj)
+                # print("trouble finding primary subject: ", p_subj)
                 school_code = OData_lookup.find_school_by_subj(p_subj)
                 school = School.objects.get(opendata_abbr=school_code)
                 primary_subject = Subject.objects.create(
                     abbreviation=p_subj, name=p_subj, schools=school
                 )
         else:
-            print("crosslist_primary", xc_code, "not found")
+            # print("crosslist_primary", xc_code, "not found")
             primary_subject = subject
 
         school = primary_subject.schools
@@ -190,18 +191,21 @@ def pull_courses(term):
             year = term[:4]
 
             course = Course.objects.update_or_create(
-                owner=User.objects.get(username="mfhodges"),
-                course_term=term[-1],
-                course_activity=activity,
                 course_code=course_code,
-                course_subject=subject,
-                course_primary_subject=primary_subject,
-                primary_crosslist=primary_crosslist,
-                course_schools=school,
-                course_number=course_number,
-                course_section=section_number,
-                course_name=title,
-                year=year,
+                defautls={
+                    "owner": User.objects.get(username="mfhodges"),
+                    "course_term": term[-1],
+                    "course_activity": activity,
+                    "course_code": course_code,
+                    "course_subject": subject,
+                    "course_primary_subject": primary_subject,
+                    "primary_crosslist": primary_crosslist,
+                    "course_schools": school,
+                    "course_number": course_number,
+                    "course_section": section_number,
+                    "course_name": title,
+                    "year": year,
+                },
             )
             # print({'course_term' : term,
             #'course_activity' : activity,
