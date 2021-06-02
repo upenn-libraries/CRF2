@@ -166,7 +166,6 @@ def pull_courses(term):
             activity = Activity.objects.create(abbr=activity, name=activity)
 
         try:
-            # cut off term (5), get last 6 digits ( number & section )
             n_s = course_code[:-5][-6:]
             course_number = n_s[:3]
             section_number = n_s[-3:]
@@ -176,13 +175,12 @@ def pull_courses(term):
                 title = roman_title(title)
             year = term[:4]
 
-            course = Course.objects.update_or_create(
+            Course.objects.update_or_create(
                 course_code=course_code,
                 defaults={
                     "owner": User.objects.get(username="mfhodges"),
                     "course_term": term[-1],
                     "course_activity": activity,
-                    "course_code": course_code,
                     "course_subject": subject,
                     "course_primary_subject": primary_subject,
                     "primary_crosslist": primary_crosslist,
@@ -193,17 +191,6 @@ def pull_courses(term):
                     "year": year,
                 },
             )
-            # print({'course_term' : term,
-            #'course_activity' : activity,
-            #'course_code' : course_code,
-            #'course_subject' : subject,
-            #'course_primary_subject' : primary_subject,
-            #'primary_crosslist' : primary_crosslist,
-            #'course_schools' : school,
-            #'course_number' : course_number,
-            #'course_section' : section_number,
-            #'course_name' : title,
-            #'year' :year})
 
         except Exception as e:
             # check if updates !
