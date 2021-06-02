@@ -1,7 +1,5 @@
-
-from rest_framework import generics, permissions
 from django.contrib.auth.models import User
-
+from rest_framework import generics, permissions
 
 """
 I've been running into issues with the no. of SQL queries used in each page.. so in an attempt to reduce that
@@ -14,5 +12,5 @@ def user_permissons(request):
     value = request.user.is_staff
 
     return {
-        'staff': value,
+        "staff": value,
     }

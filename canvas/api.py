@@ -1,25 +1,14 @@
-
-
-import json
-import re
-import requests
 from configparser import ConfigParser
-# here are most of the basic API requests that should support the CRF
+
+from canvasapi import Canvas
+from canvasapi.exceptions import CanvasException
 
 config = ConfigParser()
-config.read('config/config.ini')
-domain = config.get('canvas','prod_env') #'prod_env')
-key = config.get('canvas', 'prod_key')#'prod_key')
-headers = {
-    'Authorization': 'Bearer %s' % (key)
-}
+config.read("config/config.ini")
+domain = config.get("canvas", "prod_env")
+key = config.get("canvas", "prod_key")
+headers = {"Authorization": "Bearer %s" % (key)}
 
-
-# Import the Canvas class
-from canvasapi import Canvas
-from canvasapi.tab import Tab
-from canvasapi.enrollment_term import EnrollmentTerm
-from canvasapi.exceptions import CanvasException
 
 # Canvas API URL
 API_URL = domain
@@ -27,19 +16,19 @@ API_URL = domain
 API_KEY = key
 
 
+# --------------- RETREIVEING FROM CANVAS ------------------
 
-#--------------- RETREIVEING FROM CANVAS ------------------
 
 def get_user_by_sis(login_id):
     # login_id == pennkey
-    #https://canvas.instructure.com/doc/api/users.html
+    # https://canvas.instructure.com/doc/api/users.html
     # Initialize a new Canvas object
     canvas = Canvas(API_URL, API_KEY)
-    #canvas.get_user(123)
+    # canvas.get_user(123)
     try:
-        login_id_user = canvas.get_user(login_id, 'sis_login_id')
-        #print(login_id_user, login_id_user.attributes)
-        #print(login_id_user.get_courses()[0].attributes)
+        login_id_user = canvas.get_user(login_id, "sis_login_id")
+        # print(login_id_user, login_id_user.attributes)
+        # print(login_id_user.get_courses()[0].attributes)
         return login_id_user
     except CanvasException as e:
         print("CanvasException: ", e)
@@ -47,43 +36,44 @@ def get_user_by_sis(login_id):
 
 
 # need to test this
-def mycreate_user(pennkey,pennid,email,fullname):
+def mycreate_user(pennkey, pennid, email, fullname):
     # 1. create account with SIS_ID speciified
-    canvas = Canvas(API_URL, API_KEY)
-    pseudonym = {'sis_user_id': pennid,'unique_id':pennkey}
+    # canvas = Canvas(API_URL, API_KEY)
+    pseudonym = {"sis_user_id": pennid, "unique_id": pennkey}
     try:
         account = find_account(96678)
-        user = account.create_user(pseudonym,user={'name':fullname})
-        user.edit(user={'email':email})
+        user = account.create_user(pseudonym, user={"name": fullname})
+        user.edit(user={"email": email})
         return user
     except CanvasException as e:
         print("CanvasException: ", e)
         return None
 
+
 def get_user_courses(login_id):
     user = get_user_by_sis(login_id)
-    if user== None:
+    if user is None:
         return None
-    return user.get_courses(enrollment_type='teacher')
-
+    return user.get_courses(enrollment_type="teacher")
 
 
 def find_in_canvas(sis_section_id):
     """
-        :param sis_section_id: the SIS ID of a course. 'SRS_BIOL-101-601 2014C
-        :type sis_section_id: str
+    :param sis_section_id: the SIS ID of a course. 'SRS_BIOL-101-601 2014C
+    :type sis_section_id: str
     """
     # to see if the course exits just search the section
-    #https://canvas.upenn.edu/api/v1/sections/sis_section_id:SRS_BIOL-101-601%202014C
-    # (line 1048) https://github.com/ucfopen/canvasapi/blob/49ddf3d12c411de25121a8a04b99a0b62b6a1de4/canvasapi/canvas.py
+    # https://canvas.upenn.edu/api/v1/sections/sis_section_id:SRS_BIOL-101-601%202014C
+    # (line 1048)
+    # https://github.com/ucfopen/canvasapi/blob/49ddf3d12c411de25121a8a04b99a0b62b6a1de4/canvasapi/canvas.py
 
     canvas = Canvas(API_URL, API_KEY)
     try:
-        section = canvas.get_section(sis_section_id, use_sis_id=True)#, **kwargs)
+        section = canvas.get_section(sis_section_id, use_sis_id=True)  # , **kwargs)
     except CanvasException as e:
         print("CanvasException: ", e)
         return None
-    #if bad: while(1);{"errors":[{"message":"The specified resource does not exist."}]}
+    # if bad: while(1);{"errors":[{"message":"The specified resource does not exist."}]}
 
     return section
 
@@ -98,24 +88,24 @@ def find_account(account_id):
         return None
 
 
-def find_term_id(account_id,sis_term_id):
+def find_term_id(account_id, sis_term_id):
     # term= 2019C
     # https://canvas.upenn.edu/api/v1/accounts/96678/terms/sis_term_id:2019C -- works
     canvas = Canvas(API_URL, API_KEY)
     account = canvas.get_account(account_id)
     if account:
         response = account._requester.request(
-            "GET", "accounts/{}/terms/sis_term_id:{}".format(account_id, sis_term_id))
+            "GET", "accounts/{}/terms/sis_term_id:{}".format(account_id, sis_term_id)
+        )
         if response.status_code == 200:
-            return(response.json()['id'])
+            return response.json()["id"]
         else:
             return None
     else:
         return None
 
 
-
-#create_course(self, **kwargs):
+# create_course(self, **kwargs):
 # course[name]
 # course[sis_course_id]
 # course[term_id]
@@ -123,19 +113,12 @@ def find_term_id(account_id,sis_term_id):
 # try to create something https://canvas.upenn.edu/courses/1472986
 
 
-
-
-
-
-
-
-
 def search_course(terms):
-    #https://github.com/instructure/canvas-lms/blob/master/app/controllers/search_controller.rb
+    # https://github.com/instructure/canvas-lms/blob/master/app/controllers/search_controller.rb
     return None
 
 
-#--------------- CANVAS API JSON STRUCTURE ------------------
+# --------------- CANVAS API JSON STRUCTURE ------------------
 
 """
 ################ SECTION OBJECT ################
@@ -156,7 +139,7 @@ def search_course(terms):
 """
 
 
-#--------------- PUTTING IN  CANVAS ------------------
+# --------------- PUTTING IN  CANVAS ------------------
 
 """
 #######################################

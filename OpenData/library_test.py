@@ -1,28 +1,23 @@
-from library import *
 from configparser import ConfigParser
 
-
+from library import *
 
 config = ConfigParser()
-config.read('../config/config.ini')
+config.read("../config/config.ini")
 
-domain = config.get('opendata', 'domain')
-id = config.get('opendata', 'id')
-key = config.get('opendata', 'key')
-headers = {
-    'Authorization-Bearer' : id,
-    'Authorization-Token':key
-}
+domain = config.get("opendata", "domain")
+id = config.get("opendata", "id")
+key = config.get("opendata", "key")
+headers = {"Authorization-Bearer": id, "Authorization-Token": key}
 
 
 #################################
 ##### a lil testing for the #####
 ##### Open Data API wrapper #####
 #################################
-#print(">> ")
+# print(">> ")
 
-OpenData = OpenData(domain,id,key)
-
+OpenData = OpenData(domain, id, key)
 
 
 print(">>  OpenData.get_available_terms()")
@@ -30,12 +25,14 @@ print(OpenData.get_available_terms())
 input("Press Enter to continue...\n")
 
 print(">> OpenData.call_api(result_data=True)")
-OpenData.set_uri('course_section_search')
-OpenData.add_param('course_id','MATH')
-OpenData.add_param('term','2019C')
-print([x['section_id'] for x in OpenData.call_api(only_data=True)])
+OpenData.set_uri("course_section_search")
+OpenData.add_param("course_id", "MATH")
+OpenData.add_param("term", "2019C")
+print([x["section_id"] for x in OpenData.call_api(only_data=True)])
 while OpenData.next_page() != None:
-    print([(x['instructors'],x['section_id']) for x in OpenData.call_api(only_data=True)])
+    print(
+        [(x["instructors"], x["section_id"]) for x in OpenData.call_api(only_data=True)]
+    )
     OpenData.next_page()
 input("Press Enter to continue...\n")
 
@@ -72,10 +69,6 @@ input("Press Enter to continue...\n")
 """
 
 
-
-
-
-
-#OpenData.set_uri('directory_person_details/89450759')
-#print(OpenData.call_api())
-#input("Press Enter to continue...\n")
+# OpenData.set_uri('directory_person_details/89450759')
+# print(OpenData.call_api())
+# input("Press Enter to continue...\n")

@@ -1,80 +1,76 @@
-
-
 # https://esb.isc-seo.upenn.edu/8091/open_data/course_info/
-
-
-
 # https://esb.isc-seo.upenn.edu/8091/open_data/course_section_search_parameters/
-
-
-import json
-import re
-import time
-import requests
-from configparser import ConfigParser
-import pprint as pp
 import csv
+import sys
+from configparser import ConfigParser
+
+from course.models import Course
 from OpenData.library import OpenData
-from course.models import *
-# here are most of the basic API requests that should support the CRF
 
 config = ConfigParser()
-config.read('config/config.ini')
+config.read("config/config.ini")
+
 
 def find_crosslistings(year_term):
-    domain = config.get('opendata', 'domain')
-    id = config.get('opendata', 'id2')
-    key = config.get('opendata', 'key2')
-    print(domain,id,key)
+    domain = config.get("opendata", "domain")
+    id = config.get("opendata", "id2")
+    key = config.get("opendata", "key2")
+    print(domain, id, key)
     OData = OpenData(base_url=domain, id=id, key=key)
-    # saved for special lookups
-    OData_lookup = OpenData(base_url=domain, id=id, key=key)
 
     data = OData.get_courses_by_term(year_term)
-    print("data",data)
-    page =1
-    with open('crosslisting_fix.csv', mode='w') as crosslisting_fix:
-        crosslisting_fix = csv.writer(crosslisting_fix, delimiter=',', quotechar='"')
+    print("data", data)
+    page = 1
+    with open("crosslisting_fix.csv", mode="w") as crosslisting_fix:
+        crosslisting_fix = csv.writer(crosslisting_fix, delimiter=",", quotechar='"')
 
-        while data != None:
-            print("\n\tSTARTING PAGE : ", page,"\n")
-            if data =='ERROR':
-                print('ERROR')
+        while data is not None:
+            print("\n\tSTARTING PAGE : ", page, "\n")
+            if data == "ERROR":
+                print("ERROR")
                 sys.exit()
-            if isinstance(data,dict): # sometimes the data passed back can be a single course and in that case it should be put in a list
-                data=[data]
+            if isinstance(data, dict):
+                # sometimes the data passed back can be a single course and in
+                # that case it should be put in a list
+                data = [data]
             for datum in data:
                 # we want to find when the cross list has diff course number
-                #print("datum",datum)
-                datum["section_id"]=datum["section_id"].replace(" ","")
-                datum["crosslist_primary"]=datum["crosslist_primary"].replace(" ","")
-                if datum["section_id"] != datum["crosslist_primary"]and datum["crosslist_primary"] != '':
-                    number1= datum["section_id"][-6:][:3]
-                    number2= datum["crosslist_primary"][-6:][:3]
+                # print("datum",datum)
+                datum["section_id"] = datum["section_id"].replace(" ", "")
+                datum["crosslist_primary"] = datum["crosslist_primary"].replace(" ", "")
+                if (
+                    datum["section_id"] != datum["crosslist_primary"]
+                    and datum["crosslist_primary"] != ""
+                ):
+                    number1 = datum["section_id"][-6:][:3]
+                    number2 = datum["crosslist_primary"][-6:][:3]
                     if number2 != number1:
-                        print(datum["section_id"],datum["crosslist_primary"])
-                        crosslisting_fix.writerow([datum["section_id"],datum["crosslist_primary"]])
+                        print(datum["section_id"], datum["crosslist_primary"])
+                        crosslisting_fix.writerow(
+                            [datum["section_id"], datum["crosslist_primary"]]
+                        )
 
-            page+=1
-            #end of for loop
-            #data =None
+            page += 1
+            # end of for loop
+            # data =None
             data = OData.next_page()
 
 
-#from course.management.commands.testing import *
+# from course.management.commands.testing import *
 
 
-#find_crosslistings('2019C')
+# find_crosslistings('2019C')
+
 
 def fix_crosslistings():
-    with open('crosslisting_fix.csv', newline='') as csvfile:
-        cx = csv.reader(csvfile, delimiter=',')
-        with open('crosslisting_check.csv', mode='w') as check:
-            check = csv.writer(check, delimiter=',', quotechar='"')
+    with open("crosslisting_fix.csv", newline="") as csvfile:
+        cx = csv.reader(csvfile, delimiter=",")
+        with open("crosslisting_check.csv", mode="w") as check:
+            check = csv.writer(check, delimiter=",", quotechar='"')
             for row in cx:
-                course=row[0]+'2019C'
-                primary=row[1]+'2019C'
-                #print(course,primary)
+                course = row[0] + "2019C"
+                primary = row[1] + "2019C"
+                # print(course,primary)
                 try:
                     crf_course = Course.objects.get(course_code=course)
                 except:
@@ -84,28 +80,30 @@ def fix_crosslistings():
                 except:
                     crf_primary = None
 
-                if crf_course and crf_primary:#check if either exist
+                if crf_course and crf_primary:  # check if either exist
                     crf_course.primary_crosslist = primary
 
-                    if crf_course.requested ==True or crf_primary.requested==True:#check if either have been requested
-                        check.writerow(['needs_review',course,primary])
-                    elif crf_course.requested ==False and crf_primary.requested==False:#
+                    if (
+                        crf_course.requested or crf_primary.requested
+                    ):  # check if either have been requested
+                        check.writerow(["needs_review", course, primary])
+                    elif not crf_course.requested and not crf_primary.requested:  #
                         # this case we can remediate
-                        print('adding',course,primary)
-                        crf_course.crosslisted.add(crf_primary) # symmetrical so dont need to do it the other way
-                        check.writerow(['added_cx',course,primary])
+                        print("adding", course, primary)
+                        crf_course.crosslisted.add(
+                            crf_primary
+                        )  # symmetrical so dont need to do it the other way
+                        check.writerow(["added_cx", course, primary])
                     crf_course.save()
-                else:# one or both dont exist.
+                else:  # one or both dont exist.
                     if crf_course:
                         crf_course.crosslist_primary = crf_primary
                         crf_course.save()
-                        print(primary, ' doesnt exits')
+                        print(primary, " doesnt exits")
                     elif crf_primary:
-                        print(course, ' doesnt exits')
+                        print(course, " doesnt exits")
                     else:
-                        check.writerow(['neither exist',course,primary])
-
-
+                        check.writerow(["neither exist", course, primary])
 
 
 """

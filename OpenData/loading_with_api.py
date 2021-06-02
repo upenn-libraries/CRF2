@@ -6,7 +6,6 @@ import time
 from configparser import ConfigParser
 
 import requests
-
 from sample_data import *
 
 """

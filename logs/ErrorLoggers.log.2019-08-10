@@ -1,5 +1,0 @@
- 
-2019-08-10 16:31:44,801  ERROR  13590  /Users/mfhodges/Desktop/CRF2/crf2/course/management/commands/add_courses.py  handle  148  couldnt find course AMCS990072   
-2019-08-10 16:32:35,285  ERROR  13590  /Users/mfhodges/Desktop/CRF2/crf2/course/management/commands/add_courses.py  handle  148  couldnt find course BIBB109911   
-2019-08-10 16:32:35,300  ERROR  13590  /Users/mfhodges/Desktop/CRF2/crf2/course/management/commands/add_courses.py  handle  148  couldnt find course BIBB109912   
-2019-08-10 16:32:57,436  ERROR  13590  /Users/mfhodges/Desktop/CRF2/crf2/course/management/commands/add_courses.py  handle  148  couldnt find course BIOE608900   

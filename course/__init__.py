@@ -1,36 +1,32 @@
 from __future__ import absolute_import, unicode_literals
+
+from django.contrib import messages
 from django.contrib.auth.signals import user_logged_in, user_logged_out
 from django.dispatch import receiver
-from django.contrib import messages
 
-#default_app_config = '.apps.CourseAppConfig'
+# default_app_config = '.apps.CourseAppConfig'
+
 
 @receiver(user_logged_in)
 def on_login(sender, user, request, **kwargs):
-    print('User ', user.username, ' just logged in')
-    request.session['on_behalf_of'] = ''
+    print("User ", user.username, " just logged in")
+    request.session["on_behalf_of"] = ""
     # Display custom messgage !
-    messages.info(request, 'Welcome!')
+    messages.info(request, "Welcome!")
 
 
 # django.contrib.auth.logout() calls flush() which
 # Deletes the current session data from the session and deletes the session cookie.
 
-#@receiver(user_logged_out)
-#def on_logout(sender, user, request, **kwargs):
+# @receiver(user_logged_out)
+# def on_logout(sender, user, request, **kwargs):
 
 
 # This will make sure the app is always imported when
 # Django starts so that shared_task will use this app.
 from .celery import app as celery_app
 
-__all__ = ('celery_app',)
-
-
-
-
-
-
+__all__ = ("celery_app",)
 
 
 """

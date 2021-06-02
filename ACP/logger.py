@@ -1,11 +1,8 @@
 import logging
-
-from logging import FileHandler
-from logging import Formatter
-
+from logging import FileHandler, Formatter
 
 """
-format for 
+format for
 1. Canvas errors
 2. CRF errors
 3. email errors
@@ -14,7 +11,8 @@ format for
 
 
 LOG_FORMAT = (
-    "%(asctime)s \t [%(levelname)s]: \t %(message)s \t in %(pathname)s:%(lineno)d")
+    "%(asctime)s \t [%(levelname)s]: \t %(message)s \t in %(pathname)s:%(lineno)d"
+)
 LOG_LEVEL = logging.INFO
 
 

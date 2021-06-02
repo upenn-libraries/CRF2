@@ -1,47 +1,37 @@
-
 # doc https://esb.isc-seo.upenn.edu/8091/
 # https://esb.isc-seo.upenn.edu/8091/open_data/course_info/
-
 
 
 # https://esb.isc-seo.upenn.edu/8091/open_data/course_section_search_parameters/
 
 
 import json
+import pprint as pp
+import random
 import re
 import time
-import requests
-import random
 from configparser import ConfigParser
-import pprint as pp
+
+import requests
 from loading_with_api import *
 
 # here are most of the basic API requests that should support the CRF
 
 config = ConfigParser()
-config.read('../config/config.ini')
+config.read("../config/config.ini")
 
 
-
-domain = config.get('opendata', 'domain')
-id = config.get('opendata', 'id')
-key = config.get('opendata', 'key')
-headers = {
-    'Authorization-Bearer' : id,
-    'Authorization-Token':key
-}
+domain = config.get("opendata", "domain")
+id = config.get("opendata", "id")
+key = config.get("opendata", "key")
+headers = {"Authorization-Bearer": id, "Authorization-Token": key}
 
 
 # I WISH I HAD KNOWN ABOUT THIS https://github.com/pennlabs/penn-sdk-python
 
 
-
-
-
-
 # SCHOOLS
 # ['DM', 'ED', 'EG', 'VM', 'AN', 'FA', 'AS', 'WH', 'MD', 'PV', 'SW', 'LW', 'NU']
-
 
 
 #######################################################################
@@ -49,80 +39,317 @@ headers = {
 ## data than
 #######################################################################
 school_data = [
-{"abbreviation":"AN", "name": "Annenberg School For Communication", "visibility": True, "opendata_abbr":"AN"},
-{"abbreviation":"SAS", "name": "Arts & Sciences", "visibility": True, "opendata_abbr":"AS"},
-{"abbreviation": "DM", "name":"Dental Medicine", "visibility": True, "opendata_abbr":"DM"},
-{"abbreviation": "GSE", "name":"Graduate School Of Education", "visibility": False, "opendata_abbr":"ED"},
-{"abbreviation": "SEAS", "name":"Engineering", "visibility": True, "opendata_abbr":"EG"},
-{"abbreviation": "FA", "name":"Design", "visibility": True, "opendata_abbr":"FA"},
-{"abbreviation": "LW", "name":"Law", "visibility": True, "opendata_abbr":"LW"},
-{"abbreviation": "PSOM", "name":"Perelman School Of Medicine", "visibility": True, "opendata_abbr":"MD"},
-{"abbreviation": "NURS", "name":"Nursing", "visibility": True, "opendata_abbr":"NU"},
-{"abbreviation": "PC", "name":"Provost Center", "visibility": True, "opendata_abbr":"PV"},
-{"abbreviation": "SP2", "name":"Social Policy & Practice", "visibility": True, "opendata_abbr":"SW"},
-{"abbreviation": "VET", "name":"Veterinary Medicine", "visibility": True, "opendata_abbr":"VM"},
-{"abbreviation": "WH", "name":"Wharton", "visibility": True, "opendata_abbr":"WH"},
- {"abbreviation":"XX","name":"Special Programs","visibility":True,"opendata_abbr":"XX" }
+    {
+        "abbreviation": "AN",
+        "name": "Annenberg School For Communication",
+        "visibility": True,
+        "opendata_abbr": "AN",
+    },
+    {
+        "abbreviation": "SAS",
+        "name": "Arts & Sciences",
+        "visibility": True,
+        "opendata_abbr": "AS",
+    },
+    {
+        "abbreviation": "DM",
+        "name": "Dental Medicine",
+        "visibility": True,
+        "opendata_abbr": "DM",
+    },
+    {
+        "abbreviation": "GSE",
+        "name": "Graduate School Of Education",
+        "visibility": False,
+        "opendata_abbr": "ED",
+    },
+    {
+        "abbreviation": "SEAS",
+        "name": "Engineering",
+        "visibility": True,
+        "opendata_abbr": "EG",
+    },
+    {"abbreviation": "FA", "name": "Design", "visibility": True, "opendata_abbr": "FA"},
+    {"abbreviation": "LW", "name": "Law", "visibility": True, "opendata_abbr": "LW"},
+    {
+        "abbreviation": "PSOM",
+        "name": "Perelman School Of Medicine",
+        "visibility": True,
+        "opendata_abbr": "MD",
+    },
+    {
+        "abbreviation": "NURS",
+        "name": "Nursing",
+        "visibility": True,
+        "opendata_abbr": "NU",
+    },
+    {
+        "abbreviation": "PC",
+        "name": "Provost Center",
+        "visibility": True,
+        "opendata_abbr": "PV",
+    },
+    {
+        "abbreviation": "SP2",
+        "name": "Social Policy & Practice",
+        "visibility": True,
+        "opendata_abbr": "SW",
+    },
+    {
+        "abbreviation": "VET",
+        "name": "Veterinary Medicine",
+        "visibility": True,
+        "opendata_abbr": "VM",
+    },
+    {
+        "abbreviation": "WH",
+        "name": "Wharton",
+        "visibility": True,
+        "opendata_abbr": "WH",
+    },
+    {
+        "abbreviation": "XX",
+        "name": "Special Programs",
+        "visibility": True,
+        "opendata_abbr": "XX",
+    },
 ]
-#{"abbreviation": "SS", "name":"Summer Sessions", "visibility": True, "opendata_abbr":""},
+# {"abbreviation": "SS", "name":"Summer Sessions", "visibility": True, "opendata_abbr":""},
 # Special Programs should include the "Programs" defined below or other general mislabeled!
-opendata_crf_school_mappings= {
-    'DM':"DM",
-    'ED':"GSE",
-    'EG':"SEAS",
-    'VM':"VET",
-    'AN':"AN",
-    'FA':"FA",
-    'AS':"SAS",
-    'WH':"WH",
-    'MD':"PSOM",
-    'PV':"PC",
-    'SW':"SP2",
-    'LW':"LW",
-    'NU':"NURS"
-    }
+opendata_crf_school_mappings = {
+    "DM": "DM",
+    "ED": "GSE",
+    "EG": "SEAS",
+    "VM": "VET",
+    "AN": "AN",
+    "FA": "FA",
+    "AS": "SAS",
+    "WH": "WH",
+    "MD": "PSOM",
+    "PV": "PC",
+    "SW": "SP2",
+    "LW": "LW",
+    "NU": "NURS",
+}
 
-programs= {'BFS': 'Ben Franklin Seminars',
- 'CGS': 'College of Liberal & Professional Studies',
- 'CRS': 'Critical Writing Seminars',
- 'FORB': 'Freshman-Friendly courses',
- 'MFS': 'Freshman Seminars',
- 'MPG': 'Penn Global Seminars',
- 'MSL': 'Academically Based Community Service Courses',
- 'ONL': 'Penn LPS Online',
- 'PLC': 'Penn Language Center',
- 'SS': 'Summer Sessions I & II',
- 'WPWP': 'Wharton Programs for Working Professionals'
- }
-
+programs = {
+    "BFS": "Ben Franklin Seminars",
+    "CGS": "College of Liberal & Professional Studies",
+    "CRS": "Critical Writing Seminars",
+    "FORB": "Freshman-Friendly courses",
+    "MFS": "Freshman Seminars",
+    "MPG": "Penn Global Seminars",
+    "MSL": "Academically Based Community Service Courses",
+    "ONL": "Penn LPS Online",
+    "PLC": "Penn Language Center",
+    "SS": "Summer Sessions I & II",
+    "WPWP": "Wharton Programs for Working Professionals",
+}
 
 
 # mapping of two char School code to subjects
-school_subj = {'AS': ['AAMW', 'AFRC', 'AFST', 'ALAN', 'AMCS', 'ANCH', 'ANEL', 'ANTH', 'APOP', 'ARAB', 'ARTH', 'ASAM', 'ASTR', 'BCHE', 'BDS', 'BENF', 'BENG', 'BIBB', 'BIOL', 'CHEM', 'CHIN', 'CIMS', 'CLCH', 'CLST', 'COGS', 'COML', 'CRIM', 'CRWR', 'DATA', 'DEMG', 'DTCH', 'DYNM', 'EALC', 'ECON', 'EEUR', 'ENGL', 'ENVS', 'FOLK', 'FREN', 'GAFL', 'GAS', 'GEOL', 'GLBS', 'GREK', 'GRMN', 'GSWS', 'GUJR', 'HEBR', 'HIND', 'HIST', 'HSOC', 'HSSC', 'ICOM', 'IMPA', 'INTR', 'ITAL', 'JPAN', 'JWST', 'KORN', 'LALS', 'LATN', 'LEAD', 'LGIC', 'LING', 'MATH', 'MCS', 'MLA', 'MLYM', 'MMP', 'MODM', 'MTHS', 'MUSC', 'NELC', 'NEUR', 'ORGC', 'PERS', 'PHIL', 'PHYS', 'PPE', 'PROW', 'PRTG', 'PSCI', 'PSYC', 'PUNJ', 'QUEC', 'RELC', 'RELS', 'ROML', 'RUSS', 'SAST', 'SCND', 'SKRT', 'SLAV', 'SOCI', 'SPAN', 'SPRO', 'STSC', 'TAML', 'TELU', 'THAR', 'TURK', 'URBS', 'URDU', 'VIPR', 'VLST', 'WRIT', 'YDSH'], 'WH': ['ACCT', 'BEPP', 'FNCE', 'HCMG', 'INTS', 'LGST', 'LSMP', 'MGEC', 'MGMT', 'MKTG', 'OIDD', 'REAL', 'STAT', 'WH', 'WHCP'], 'MD': ['ANAT', 'BIOE', 'BIOM', 'BMB', 'BMIN', 'BSTA', 'CAMB', 'EPID', 'GCB', 'HCIN', 'HPR', 'IMUN', 'MED', 'MPHY', 'MTR', 'NGG', 'PHRM', 'PUBH', 'REG'], 'FA': ['ARCH', 'CPLN', 'ENMG', 'FNAR', 'HSPV', 'LARP', 'MUSA'], 'EG': ['BE', 'BIOT', 'CBE', 'CIS', 'CIT', 'DATS', 'EAS', 'ENGR', 'ENM', 'ESE', 'IPD', 'MEAM', 'MSE', 'NANO', 'NETS'], 'AN': ['COMM'], 'DM': ['DADE', 'DCOH', 'DEND', 'DENT', 'DOMD', 'DORT', 'DOSP', 'DPED', 'DRST'], 'ED': ['EDUC'], 'PV': ['INTL', 'MSCI', 'NSCI'], 'LW': ['LAW', 'LAWM'], 'SW': ['MSSP', 'NPLD', 'SWRK'], 'NU': ['NURS'], 'VM': ['VBMS', 'VCSN', 'VCSP', 'VISR', 'VMED', 'VPTH']}
+school_subj = {
+    "AS": [
+        "AAMW",
+        "AFRC",
+        "AFST",
+        "ALAN",
+        "AMCS",
+        "ANCH",
+        "ANEL",
+        "ANTH",
+        "APOP",
+        "ARAB",
+        "ARTH",
+        "ASAM",
+        "ASTR",
+        "BCHE",
+        "BDS",
+        "BENF",
+        "BENG",
+        "BIBB",
+        "BIOL",
+        "CHEM",
+        "CHIN",
+        "CIMS",
+        "CLCH",
+        "CLST",
+        "COGS",
+        "COML",
+        "CRIM",
+        "CRWR",
+        "DATA",
+        "DEMG",
+        "DTCH",
+        "DYNM",
+        "EALC",
+        "ECON",
+        "EEUR",
+        "ENGL",
+        "ENVS",
+        "FOLK",
+        "FREN",
+        "GAFL",
+        "GAS",
+        "GEOL",
+        "GLBS",
+        "GREK",
+        "GRMN",
+        "GSWS",
+        "GUJR",
+        "HEBR",
+        "HIND",
+        "HIST",
+        "HSOC",
+        "HSSC",
+        "ICOM",
+        "IMPA",
+        "INTR",
+        "ITAL",
+        "JPAN",
+        "JWST",
+        "KORN",
+        "LALS",
+        "LATN",
+        "LEAD",
+        "LGIC",
+        "LING",
+        "MATH",
+        "MCS",
+        "MLA",
+        "MLYM",
+        "MMP",
+        "MODM",
+        "MTHS",
+        "MUSC",
+        "NELC",
+        "NEUR",
+        "ORGC",
+        "PERS",
+        "PHIL",
+        "PHYS",
+        "PPE",
+        "PROW",
+        "PRTG",
+        "PSCI",
+        "PSYC",
+        "PUNJ",
+        "QUEC",
+        "RELC",
+        "RELS",
+        "ROML",
+        "RUSS",
+        "SAST",
+        "SCND",
+        "SKRT",
+        "SLAV",
+        "SOCI",
+        "SPAN",
+        "SPRO",
+        "STSC",
+        "TAML",
+        "TELU",
+        "THAR",
+        "TURK",
+        "URBS",
+        "URDU",
+        "VIPR",
+        "VLST",
+        "WRIT",
+        "YDSH",
+    ],
+    "WH": [
+        "ACCT",
+        "BEPP",
+        "FNCE",
+        "HCMG",
+        "INTS",
+        "LGST",
+        "LSMP",
+        "MGEC",
+        "MGMT",
+        "MKTG",
+        "OIDD",
+        "REAL",
+        "STAT",
+        "WH",
+        "WHCP",
+    ],
+    "MD": [
+        "ANAT",
+        "BIOE",
+        "BIOM",
+        "BMB",
+        "BMIN",
+        "BSTA",
+        "CAMB",
+        "EPID",
+        "GCB",
+        "HCIN",
+        "HPR",
+        "IMUN",
+        "MED",
+        "MPHY",
+        "MTR",
+        "NGG",
+        "PHRM",
+        "PUBH",
+        "REG",
+    ],
+    "FA": ["ARCH", "CPLN", "ENMG", "FNAR", "HSPV", "LARP", "MUSA"],
+    "EG": [
+        "BE",
+        "BIOT",
+        "CBE",
+        "CIS",
+        "CIT",
+        "DATS",
+        "EAS",
+        "ENGR",
+        "ENM",
+        "ESE",
+        "IPD",
+        "MEAM",
+        "MSE",
+        "NANO",
+        "NETS",
+    ],
+    "AN": ["COMM"],
+    "DM": ["DADE", "DCOH", "DEND", "DENT", "DOMD", "DORT", "DOSP", "DPED", "DRST"],
+    "ED": ["EDUC"],
+    "PV": ["INTL", "MSCI", "NSCI"],
+    "LW": ["LAW", "LAWM"],
+    "SW": ["MSSP", "NPLD", "SWRK"],
+    "NU": ["NURS"],
+    "VM": ["VBMS", "VCSN", "VCSP", "VISR", "VMED", "VPTH"],
+}
 
 ########################################################################################
 ## there is a bit of an issue where ther is not a mapping of schools to subjects ...  ##
 ## here is a good start. the rest will have to be done ad hoc                         ##
 #########################################################################################
 
-def update_school_subj():
-    with open('OpenData.txt') as json_file:
-        data = json.load(json_file)
-        dept = data['departments'] # these are the subjects
-        school_subj_map = data['school_subj_map']
 
+def update_school_subj():
+    with open("OpenData.txt") as json_file:
+        data = json.load(json_file)
+        dept = data["departments"]  # these are the subjects
+        school_subj_map = data["school_subj_map"]
 
         for school in school_data:
-            create_instance('schools', school)
-            subjects = school_subj_map[school["opendata_abbr"]] # list of the dept/subject abbr in that school
+            create_instance("schools", school)
+            subjects = school_subj_map[
+                school["opendata_abbr"]
+            ]  # list of the dept/subject abbr in that school
             for subj in subjects:
-                subject_data  = {
+                subject_data = {
                     "abbreviation": subj,
                     "name": dept[subj],
                     "visible": True,
-                    "schools": school['abbreviation']
+                    "schools": school["abbreviation"],
                 }
-                create_instance('subjects',subject_data)
+                create_instance("subjects", subject_data)
+
 
 def find_school(subject):
     for school in school_subj:
@@ -132,21 +359,24 @@ def find_school(subject):
     # this should be logged
     print("Couldnt find %s in the current subject lists" % (subject))
 
+
 def check_activity(abbr):
     activity_map = {
-      "LEC" : "Lecture",
-      "REC" : "Recitation",
-      "LAB" : "Laboratory",
-      "IND" : "Independent Study",
-      "SEM" : "Seminar",
-      "SRT" : "Senior Thesis",
-      "STU" : "Studio",
-      "CLN" : "Clinic",
-      "PRC" : "SCUE Preceptorial",
-      "PRO" : "NSO Proseminar"
+        "LEC": "Lecture",
+        "REC": "Recitation",
+        "LAB": "Laboratory",
+        "IND": "Independent Study",
+        "SEM": "Seminar",
+        "SRT": "Senior Thesis",
+        "STU": "Studio",
+        "CLN": "Clinic",
+        "PRC": "SCUE Preceptorial",
+        "PRO": "NSO Proseminar",
     }
-    if abbr in [*activity_map]: return True
-    else: return False
+    if abbr in [*activity_map]:
+        return True
+    else:
+        return False
 
 
 def get_courses():
@@ -158,149 +388,139 @@ def get_courses():
     for term in terms:
         next = True
         while next:
-        #
-
+            #
 
             for course in data:
                 pp.pprint(course)
-
 
                 ###############################################################################
                 #### we need to have some way to check if the associated data already exists ##
                 ###############################################################################
 
                 # CHECK ACTIVITY
-                if check_activity(course['activity']):
-                    activity = course['activity']
+                if check_activity(course["activity"]):
+                    activity = course["activity"]
                 else:
-                    activity = 'UNK'
-
+                    activity = "UNK"
 
                 # CHECK SCHOOLS - happend in the find school
                 # we may need the school if we have to create the subject
-                course_school = find_school(course['course_department'])
+                course_school = find_school(course["course_department"])
                 if course_school == None:
-                    OpenData.find_school_by_subj(course['course_department'])
+                    OpenData.find_school_by_subj(course["course_department"])
                     school_data = {
                         "abbreviation": course_school,
-                        "name": course['department_description'],
-                        "visible": 'true',
-                        'opendata_abbr':course_school[:2]
+                        "name": course["department_description"],
+                        "visible": "true",
+                        "opendata_abbr": course_school[:2],
                     }
-                    #add it to the file
+                    # add it to the file
 
                 # CHECK SUBJECTS
-                subject = course['course_department']
-                if check_instance('subjects',subject):
+                subject = course["course_department"]
+                if check_instance("subjects", subject):
                     pass
                 else:
-                    #create subject
+                    # create subject
                     subject_data = {
-                            "abbreviation": subject,
-                            "name": course['department_description'],
-                            "visible": 'true',
-                            "schools": course_school
+                        "abbreviation": subject,
+                        "name": course["department_description"],
+                        "visible": "true",
+                        "schools": course_school,
                     }
-                    create_instance('subject',subject_data)
+                    create_instance("subject", subject_data)
 
                     # add it to the file.
 
                 # CHECK INSTRUCTORS instructors': [{'name': 'Elizabeth Shank', 'penn_id': '10124627', 'section_id': 'AAMW520401', 'term': '2019C'}]
-                for instructor in course['instructors']:
-                    if check_instructor(instructor['penn_id']):
+                for instructor in course["instructors"]:
+                    if check_instructor(instructor["penn_id"]):
                         pass
                     else:
-                        create_instructor(instructor['penn_id'])
-                #check_instructors(data['instructors'])
+                        create_instructor(instructor["penn_id"])
+                # check_instructors(data['instructors'])
 
-                course_school = find_school(course['course_department'])
-                if course['crosslist_primary']: #if this is true then the current is the primary course
-                    primary_subj = course['crosslist_primary'][:-6]
+                course_school = find_school(course["course_department"])
+                if course[
+                    "crosslist_primary"
+                ]:  # if this is true then the current is the primary course
+                    primary_subj = course["crosslist_primary"][:-6]
                 else:
                     # the listed course_subject is the primary one
-                    primary_subj = course['course_department']
+                    primary_subj = course["course_department"]
 
                 course_data = {
                     "course_code": "x",
-                    "instructors":['mfhodges'],
+                    "instructors": ["mfhodges"],
                     "course_schools": [course_school],
-                    "course_subject": course['course_department'],
+                    "course_subject": course["course_department"],
                     "course_term": term[-1],
-                    "course_activity": course['activity'],
-                    "course_number": course['course_number'],
-                    "course_section": course['section_number'],
-                    "course_name": course['course_title'],
+                    "course_activity": course["activity"],
+                    "course_number": course["course_number"],
+                    "course_section": course["section_number"],
+                    "course_name": course["course_title"],
                     "year": term[:-1],
                     "requested": False,
-                    "course_primary_subject":primary_subj
-                    }
+                    "course_primary_subject": primary_subj,
+                }
 
                 if not course_is_unique(course_data):
                     # we have NOT created this course yet so lets create it
 
                     # have the create_instance be a try and if it doesnt work write it down
-                    create_instance('courses',course_data)
-                    if course['crosslistings']:
-                        print(course['crosslistings'])
+                    create_instance("courses", course_data)
+                    if course["crosslistings"]:
+                        print(course["crosslistings"])
                         print("MAIN COURSE")
-                        pp.pprint(course_data,indent=2)
-                        input('wait a minute')
+                        pp.pprint(course_data, indent=2)
+                        input("wait a minute")
 
                         crosslist_codes = []
-                        for crosslist in course['crosslistings']:
-                            #make the course - we only need to change a few attributes ...
-                            course_data['course_number']=crosslist['course_id']
-                            course_data['course_section']=crosslist['section_id']
-                            course_data['course_subject']=crosslist['subject']
-                            course_code = course_data['course_subject'] +course_data['course_section']+course_data['course_number']+term
+                        for crosslist in course["crosslistings"]:
+                            # make the course - we only need to change a few attributes ...
+                            course_data["course_number"] = crosslist["course_id"]
+                            course_data["course_section"] = crosslist["section_id"]
+                            course_data["course_subject"] = crosslist["subject"]
+                            course_code = (
+                                course_data["course_subject"]
+                                + course_data["course_section"]
+                                + course_data["course_number"]
+                                + term
+                            )
                             crosslist_codes.append(course_code)
                             print("CROSSLISTED COURSE")
 
-                            pp.pprint(course_data,indent=2)
+                            pp.pprint(course_data, indent=2)
                             if not course_is_unique(course_data):
-                                create_instance('courses',course_data)
-                        #crosslist them
+                                create_instance("courses", course_data)
+                        # crosslist them
                         # FIX THIS
                         if crosslist_codes:
-                            primary = course['crosslist_primary']+term
-                            cross_list(primary,crosslist_codes)
-                else:# course already exists
+                            primary = course["crosslist_primary"] + term
+                            cross_list(primary, crosslist_codes)
+                else:  # course already exists
                     pass
-                    #print("course already exists")
-                print("~~~~~~~~~~~~~~~~~~~~~  NEXT COURSE   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+                    # print("course already exists")
+                print(
+                    "~~~~~~~~~~~~~~~~~~~~~  NEXT COURSE   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                )
 
             #
 
-
-
-
-
     # need to have something that checks about throttling and if its mad have it wait 5 min..
-
-
-
-
-
-
-
-
-
 
 
 def main():
     get_courses()
 
 
-if __name__== "__main__":
-  main()
+if __name__ == "__main__":
+    main()
 
 
-
-#schools = {'AS': ['AAMW', 'AFRC', 'AFST', 'ALAN', 'AMCS', 'ANCH', 'ANEL', 'ANTH', 'APOP', 'ARAB', 'ARTH', 'ASAM', 'ASTR', 'BCHE', 'BDS', 'BENF', 'BENG', 'BIBB', 'BIOL', 'CHEM', 'CHIN', 'CIMS', 'CLCH', 'CLST', 'COGS', 'COML', 'CRIM', 'CRWR', 'DATA', 'DEMG', 'DTCH', 'DYNM', 'EALC', 'ECON', 'EEUR', 'ENGL', 'ENVS', 'FOLK', 'FREN', 'GAFL', 'GAS', 'GEOL', 'GLBS', 'GREK', 'GRMN', 'GSWS', 'GUJR', 'HEBR', 'HIND', 'HIST', 'HSOC', 'HSSC', 'ICOM', 'IMPA', 'INTR', 'ITAL', 'JPAN', 'JWST', 'KORN', 'LALS', 'LATN', 'LEAD', 'LGIC', 'LING', 'MATH', 'MCS', 'MLA', 'MLYM', 'MMP', 'MODM', 'MTHS', 'MUSC', 'NELC', 'NEUR', 'ORGC', 'PERS', 'PHIL', 'PHYS', 'PPE', 'PROW', 'PRTG', 'PSCI', 'PSYC', 'PUNJ', 'QUEC', 'RELC', 'RELS', 'ROML', 'RUSS', 'SAST', 'SCND', 'SKRT', 'SLAV', 'SOCI', 'SPAN', 'SPRO', 'STSC', 'TAML', 'TELU', 'THAR', 'TURK', 'URBS', 'URDU', 'VIPR', 'VLST', 'WRIT', 'YDSH'], 'WH': ['ACCT', 'BEPP', 'FNCE', 'HCMG', 'INTS', 'LGST', 'LSMP', 'MGEC', 'MGMT', 'MKTG', 'OIDD', 'REAL', 'STAT', 'WH', 'WHCP'], 'MD': ['ANAT', 'BIOE', 'BIOM', 'BMB', 'BMIN', 'BSTA', 'CAMB', 'EPID', 'GCB', 'HCIN', 'HPR', 'IMUN', 'MED', 'MPHY', 'MTR', 'NGG', 'PHRM', 'PUBH', 'REG'], 'FA': ['ARCH', 'CPLN', 'ENMG', 'FNAR', 'HSPV', 'LARP', 'MUSA'], 'EG': ['BE', 'BIOT', 'CBE', 'CIS', 'CIT', 'DATS', 'EAS', 'ENGR', 'ENM', 'ESE', 'IPD', 'MEAM', 'MSE', 'NANO', 'NETS'], 'AN': ['COMM'], 'DM': ['DADE', 'DCOH', 'DEND', 'DENT', 'DOMD', 'DORT', 'DOSP', 'DPED', 'DRST'], 'ED': ['EDUC'], 'PV': ['INTL', 'MSCI', 'NSCI'], 'LW': ['LAW', 'LAWM'], 'SW': ['MSSP', 'NPLD', 'SWRK'], 'NU': ['NURS'], 'VM': ['VBMS', 'VCSN', 'VCSP', 'VISR', 'VMED', 'VPTH']}
+# schools = {'AS': ['AAMW', 'AFRC', 'AFST', 'ALAN', 'AMCS', 'ANCH', 'ANEL', 'ANTH', 'APOP', 'ARAB', 'ARTH', 'ASAM', 'ASTR', 'BCHE', 'BDS', 'BENF', 'BENG', 'BIBB', 'BIOL', 'CHEM', 'CHIN', 'CIMS', 'CLCH', 'CLST', 'COGS', 'COML', 'CRIM', 'CRWR', 'DATA', 'DEMG', 'DTCH', 'DYNM', 'EALC', 'ECON', 'EEUR', 'ENGL', 'ENVS', 'FOLK', 'FREN', 'GAFL', 'GAS', 'GEOL', 'GLBS', 'GREK', 'GRMN', 'GSWS', 'GUJR', 'HEBR', 'HIND', 'HIST', 'HSOC', 'HSSC', 'ICOM', 'IMPA', 'INTR', 'ITAL', 'JPAN', 'JWST', 'KORN', 'LALS', 'LATN', 'LEAD', 'LGIC', 'LING', 'MATH', 'MCS', 'MLA', 'MLYM', 'MMP', 'MODM', 'MTHS', 'MUSC', 'NELC', 'NEUR', 'ORGC', 'PERS', 'PHIL', 'PHYS', 'PPE', 'PROW', 'PRTG', 'PSCI', 'PSYC', 'PUNJ', 'QUEC', 'RELC', 'RELS', 'ROML', 'RUSS', 'SAST', 'SCND', 'SKRT', 'SLAV', 'SOCI', 'SPAN', 'SPRO', 'STSC', 'TAML', 'TELU', 'THAR', 'TURK', 'URBS', 'URDU', 'VIPR', 'VLST', 'WRIT', 'YDSH'], 'WH': ['ACCT', 'BEPP', 'FNCE', 'HCMG', 'INTS', 'LGST', 'LSMP', 'MGEC', 'MGMT', 'MKTG', 'OIDD', 'REAL', 'STAT', 'WH', 'WHCP'], 'MD': ['ANAT', 'BIOE', 'BIOM', 'BMB', 'BMIN', 'BSTA', 'CAMB', 'EPID', 'GCB', 'HCIN', 'HPR', 'IMUN', 'MED', 'MPHY', 'MTR', 'NGG', 'PHRM', 'PUBH', 'REG'], 'FA': ['ARCH', 'CPLN', 'ENMG', 'FNAR', 'HSPV', 'LARP', 'MUSA'], 'EG': ['BE', 'BIOT', 'CBE', 'CIS', 'CIT', 'DATS', 'EAS', 'ENGR', 'ENM', 'ESE', 'IPD', 'MEAM', 'MSE', 'NANO', 'NETS'], 'AN': ['COMM'], 'DM': ['DADE', 'DCOH', 'DEND', 'DENT', 'DOMD', 'DORT', 'DOSP', 'DPED', 'DRST'], 'ED': ['EDUC'], 'PV': ['INTL', 'MSCI', 'NSCI'], 'LW': ['LAW', 'LAWM'], 'SW': ['MSSP', 'NPLD', 'SWRK'], 'NU': ['NURS'], 'VM': ['VBMS', 'VCSN', 'VCSP', 'VISR', 'VMED', 'VPTH']}
 
 ## just call create_instance!
-
-
 
 
 """
@@ -396,7 +616,6 @@ if __name__== "__main__":
 
 
 """
-
 
 
 """

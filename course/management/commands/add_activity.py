@@ -1,16 +1,12 @@
-
-from django.contrib.auth.models import User
-from course.models import *
-from django.core.management.base import BaseCommand
-from django.utils.crypto import get_random_string
 from configparser import ConfigParser
-import cx_Oracle
-from OpenData.library import *
+
+from django.core.management.base import BaseCommand
+
+from course.models import Activity
+from OpenData.library import OpenData
 
 config = ConfigParser()
-config.read('config/config.ini')
-
-
+config.read("config/config.ini")
 
 
 """
@@ -41,31 +37,34 @@ abbr = models.CharField(max_length=3, unique=True)
 
 
 class Command(BaseCommand):
-    help = 'Create random users'
+    help = "Create random users"
 
     def add_arguments(self, parser):
 
-        parser.add_argument('-d', '--opendata', action='store_true', help='pull from OpenData API')
-        parser.add_argument('-l', '--localstore', action='store_true', help='pull from Local Store')
+        parser.add_argument(
+            "-d", "--opendata", action="store_true", help="pull from OpenData API"
+        )
+        parser.add_argument(
+            "-l", "--localstore", action="store_true", help="pull from Local Store"
+        )
 
     def handle(self, *args, **kwargs):
-        opendata = kwargs['opendata']
+        opendata = kwargs["opendata"]
 
         if opendata:
-            domain = config.get('opendata', 'domain')
-            id = config.get('opendata', 'id')
-            key = config.get('opendata', 'key')
-            print(domain,id,key)
+            domain = config.get("opendata", "domain")
+            id = config.get("opendata", "id")
+            key = config.get("opendata", "key")
+            print(domain, id, key)
             OData = OpenData(base_url=domain, id=id, key=key)
             activities = OData.get_available_activity()
             print(activities)
-            for abbr,name in activities.items():
+            for abbr, name in activities.items():
                 try:
-                    print("name,abbr", name,abbr)
-                    Activity.objects.create(name=name,abbr=abbr)
+                    print("name,abbr", name, abbr)
+                    Activity.objects.create(name=name, abbr=abbr)
                 except:
                     print("didnt make activity")
 
-
-            #if no results
+            # if no results
             return False

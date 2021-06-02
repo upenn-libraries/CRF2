@@ -1,9 +1,3 @@
-
-
-
-
-
-
 """
 Welcome-Banner
 
