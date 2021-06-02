@@ -45,11 +45,6 @@ def userlookup(pennid):
         return [fname, lname, email, pennkey]
 
 
-# def update_courses(term):
-#     # check if the term is closed
-#     pass
-
-
 def pull_courses(term):
     config = ConfigParser()
     config.read("config/config.ini")
@@ -190,23 +185,36 @@ def pull_courses(term):
                 title = roman_title(title)
             year = term[:4]
 
-            course = Course.objects.update_or_create(
-                course_code=course_code,
-                defaults={
-                    "owner": User.objects.get(username="mfhodges"),
-                    "course_term": term[-1],
-                    "course_activity": activity,
-                    "course_code": course_code,
-                    "course_subject": subject,
-                    "course_primary_subject": primary_subject,
-                    "primary_crosslist": primary_crosslist,
-                    "course_schools": school,
-                    "course_number": course_number,
-                    "course_section": section_number,
-                    "course_name": title,
-                    "year": year,
-                },
-            )
+            try:
+                course = Course.ojbects.get(course_code=course_code)
+                course.update(
+                    owner=User.objects.get(username="mfhodges"),
+                    course_term=term[-1],
+                    course_activity=activity,
+                    course_subject=subject,
+                    course_primary_subject=primary_subject,
+                    primary_crosslist=primary_crosslist,
+                    course_schools=school,
+                    course_number=course_number,
+                    course_section=section_number,
+                    course_name=title,
+                    year=year,
+                )
+            except:
+                course = Course.objects.create(
+                    owner=User.objects.get(username="mfhodges"),
+                    course_term=term[-1],
+                    course_activity=activity,
+                    course_code=course_code,
+                    course_subject=subject,
+                    course_primary_subject=primary_subject,
+                    primary_crosslist=primary_crosslist,
+                    course_schools=school,
+                    course_number=course_number,
+                    course_section=section_number,
+                    course_name=title,
+                    year=year,
+                )
             # print({'course_term' : term,
             #'course_activity' : activity,
             #'course_code' : course_code,
