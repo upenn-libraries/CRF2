@@ -164,6 +164,7 @@ title = "gitlab gitleaks config"
             '''(?i)(key\s*?=\s*?(config.get|line.replace|key|models.textfield|none|user.username))''',
             '''(?i)(key\s*?=\s*?(:?)p?penn(_?)key)''',
             '''(?i)(key\s*?=\s*?request.(get|post))''',
+            '''(?i)(password\s*?=\s*?(\"123\"))''',
             '''(?i)(password\s*?=\s*?(\'mypassword\'|\'123\'))''',
             '''(?i)(password\s*?=\s*?(none|password|passwrd|value|config.get))''',
             '''(?i)(pennkey\\u003e\/)''',
