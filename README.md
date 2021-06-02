@@ -83,25 +83,38 @@ Commands are run by invoking them through the "manage.py" file. To see all avail
 
 To run the application the first time:
 
-1. `python manage.py migrate` (you may also need to run `python manage.py makemigrations` -- you will be prompted if so)
+1. `python manage.py migrate`
 2. `python manage.py runserver`
 
 To log in as an admin: [http://localhost:8000/admin/](http://localhost:8000/admin/)  
 To log in as a user: [http://localhost:8000/accounts/login/](http://localhost:8000/accounts/login/)
 
-To test using your virtual environment's interactive shell, use `python manage.py shell_plus`.
+To run python interactively using your virtual environment's shell, use `python manage.py shell_plus`.
+
+If you make changes to your "models.py" file, you will need to run:
+
+1. `python manage.py makemigrations`
+2. `python manage.py migrate`
+
+### Data Warehouse
+
+To query the Data Warehouse directly, make sure you are connected through the GlobalProtect VPN and run:
+
+`sqlplus 'LIBCANVAS/W3!C0m43mK8!@(DESCRIPTION=(ADDRESS=(COMMUNITY=isc.penn)(PROTOCOL=TCP)(HOST=warehouse.isc.upenn.edu)(PORT=1521))(CONNECT_DATA=(GLOBAL_NAME=whse)(SID=whse)))'` (recommend storing this as a [shell alias](https://shapeshed.com/unix-alias/))
+
+Reference: [sqlplus Documentation](https://docs.oracle.com/cd/B19306_01/server.102/b14357/toc.htm)
 
 ## Server
 
 ### Access Requirements
 
-- WireGuard VPN (must be set up through [Penn IT Help Desk](https://ithelp.library.upenn.edu/support/home)) 
+- WireGuard VPN (must be set up through [Penn IT Help Desk](https://ithelp.library.upenn.edu/support/home))
 - SSH access to the production and development domains
 - Permissions to "switch user" to user "django"
 
 ### Commands
 
-To login to the production and development instances:
+To login to the production and development instances, make sure you are connected through the WireGuard VPN and run:
 
 1. `ssh reqform01.library.upenn.int` (production) or `ssh reqform-dev.library.upenn.int` (development)
 2. `sudo su - django`
@@ -111,7 +124,7 @@ To pull changes from GitLab:
 1. `cd /home/django/crf2`
 2. `git pull`
 
-To restart the app:
+To restart the app (run this after pulling changes):
 
 1. `cd /home/django/crf2/crf2`
 2. `touch wsgi.py`
@@ -120,3 +133,8 @@ Working with the virtual environment:
 
 - Activation: `source /home/django/venv/bin/activate`
 - Deactivation: `exit`
+
+### Logs
+
+Logs for `pull_instructors`: "/home/django/crf2/logs/"  
+Logs for `pull_courses`: "/var/log/celery/"
