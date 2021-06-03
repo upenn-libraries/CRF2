@@ -276,7 +276,7 @@ def pull_instructors(term):
                 else:
                     message = (
                         f"Couldn't create account for: {first_name} "
-                        f"{last_name} | {pennkey} | {penn_id} | {email}"
+                        f"{last_name} | {pennkey} | {penn_id} | {email} | {section_id}"
                     )
                     getLogger("error_logger").error(message)
         except:
