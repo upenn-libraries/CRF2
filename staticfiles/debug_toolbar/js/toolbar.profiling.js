@@ -1,3 +1,3 @@
 (function () {
-    djdt.applyStyle('padding-left');
+  djdt.applyStyle("padding-left");
 })();

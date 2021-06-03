@@ -1,10 +1,10 @@
-define([
-  'require',
-  'jquery',
-  './defaults',
-  './utils'
-], function (require, $, Defaults, Utils) {
-  function Options (options, $element) {
+define(["require", "jquery", "./defaults", "./utils"], function (
+  require,
+  $,
+  Defaults,
+  Utils
+) {
+  function Options(options, $element) {
     this.options = options;
 
     if ($element != null) {
@@ -13,8 +13,8 @@ define([
 
     this.options = Defaults.apply(this.options);
 
-    if ($element && $element.is('input')) {
-      var InputCompat = require(this.get('amdBase') + 'compat/inputData');
+    if ($element && $element.is("input")) {
+      var InputCompat = require(this.get("amdBase") + "compat/inputData");
 
       this.options.dataAdapter = Utils.Decorate(
         this.options.dataAdapter,
@@ -24,69 +24,68 @@ define([
   }
 
   Options.prototype.fromElement = function ($e) {
-    var excludedData = ['select2'];
+    var excludedData = ["select2"];
 
     if (this.options.multiple == null) {
-      this.options.multiple = $e.prop('multiple');
+      this.options.multiple = $e.prop("multiple");
     }
 
     if (this.options.disabled == null) {
-      this.options.disabled = $e.prop('disabled');
+      this.options.disabled = $e.prop("disabled");
     }
 
     if (this.options.language == null) {
-      if ($e.prop('lang')) {
-        this.options.language = $e.prop('lang').toLowerCase();
-      } else if ($e.closest('[lang]').prop('lang')) {
-        this.options.language = $e.closest('[lang]').prop('lang');
+      if ($e.prop("lang")) {
+        this.options.language = $e.prop("lang").toLowerCase();
+      } else if ($e.closest("[lang]").prop("lang")) {
+        this.options.language = $e.closest("[lang]").prop("lang");
       }
     }
 
     if (this.options.dir == null) {
-      if ($e.prop('dir')) {
-        this.options.dir = $e.prop('dir');
-      } else if ($e.closest('[dir]').prop('dir')) {
-        this.options.dir = $e.closest('[dir]').prop('dir');
+      if ($e.prop("dir")) {
+        this.options.dir = $e.prop("dir");
+      } else if ($e.closest("[dir]").prop("dir")) {
+        this.options.dir = $e.closest("[dir]").prop("dir");
       } else {
-        this.options.dir = 'ltr';
+        this.options.dir = "ltr";
       }
     }
 
-    $e.prop('disabled', this.options.disabled);
-    $e.prop('multiple', this.options.multiple);
+    $e.prop("disabled", this.options.disabled);
+    $e.prop("multiple", this.options.multiple);
 
-    if (Utils.GetData($e[0], 'select2Tags')) {
+    if (Utils.GetData($e[0], "select2Tags")) {
       if (this.options.debug && window.console && console.warn) {
         console.warn(
-          'Select2: The `data-select2-tags` attribute has been changed to ' +
-          'use the `data-data` and `data-tags="true"` attributes and will be ' +
-          'removed in future versions of Select2.'
+          "Select2: The `data-select2-tags` attribute has been changed to " +
+            'use the `data-data` and `data-tags="true"` attributes and will be ' +
+            "removed in future versions of Select2."
         );
       }
 
-      Utils.StoreData($e[0], 'data', Utils.GetData($e[0], 'select2Tags'));
-      Utils.StoreData($e[0], 'tags', true);
+      Utils.StoreData($e[0], "data", Utils.GetData($e[0], "select2Tags"));
+      Utils.StoreData($e[0], "tags", true);
     }
 
-    if (Utils.GetData($e[0], 'ajaxUrl')) {
+    if (Utils.GetData($e[0], "ajaxUrl")) {
       if (this.options.debug && window.console && console.warn) {
         console.warn(
-          'Select2: The `data-ajax-url` attribute has been changed to ' +
-          '`data-ajax--url` and support for the old attribute will be removed' +
-          ' in future versions of Select2.'
+          "Select2: The `data-ajax-url` attribute has been changed to " +
+            "`data-ajax--url` and support for the old attribute will be removed" +
+            " in future versions of Select2."
         );
       }
 
-      $e.attr('ajax--url', Utils.GetData($e[0], 'ajaxUrl'));
-      Utils.StoreData($e[0], 'ajax-Url', Utils.GetData($e[0], 'ajaxUrl'));
-	  
+      $e.attr("ajax--url", Utils.GetData($e[0], "ajaxUrl"));
+      Utils.StoreData($e[0], "ajax-Url", Utils.GetData($e[0], "ajaxUrl"));
     }
 
     var dataset = {};
 
     // Prefer the element's `dataset` attribute if it exists
     // jQuery 1.x does not correctly handle data attributes with multiple dashes
-    if ($.fn.jquery && $.fn.jquery.substr(0, 2) == '1.' && $e[0].dataset) {
+    if ($.fn.jquery && $.fn.jquery.substr(0, 2) == "1." && $e[0].dataset) {
       dataset = $.extend(true, {}, $e[0].dataset, Utils.GetData($e[0]));
     } else {
       dataset = Utils.GetData($e[0]);

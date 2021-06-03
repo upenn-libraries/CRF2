@@ -1,6 +1,6 @@
-module('DOM integration');
+module("DOM integration");
 
-test('adding a new unselected option changes nothing', function (assert) {
+test("adding a new unselected option changes nothing", function (assert) {
   // Any browsers which support mutation observers will not trigger the event
   var expected = 4;
   if (window.MutationObserver) {
@@ -18,32 +18,25 @@ test('adding a new unselected option changes nothing', function (assert) {
     asyncDone = assert.async();
   }
 
-  var $ = require('jquery');
-  var Options = require('select2/options');
-  var Select2 = require('select2/core');
+  var $ = require("jquery");
+  var Options = require("select2/options");
+  var Select2 = require("select2/core");
 
   var $select = $(
-    '<select>' +
-      '<option>One</option>' +
-      '<option>Two</option>' +
-    '</select>'
+    "<select>" + "<option>One</option>" + "<option>Two</option>" + "</select>"
   );
 
-  $('#qunit-fixture').append($select);
+  $("#qunit-fixture").append($select);
 
   var select = new Select2($select);
 
-  select.on('selection:update', function (args) {
-    assert.equal(
-      args.data.length,
-      1,
-      'There was more than one selection'
-    );
+  select.on("selection:update", function (args) {
+    assert.equal(args.data.length, 1, "There was more than one selection");
 
     assert.equal(
       args.data[0].id,
-      'One',
-      'The selection changed to something other than One'
+      "One",
+      "The selection changed to something other than One"
     );
 
     if (expected != 2) {
@@ -51,24 +44,18 @@ test('adding a new unselected option changes nothing', function (assert) {
     }
   });
 
-  assert.equal(
-    $select.val(),
-    'One'
-  );
+  assert.equal($select.val(), "One");
 
-  var $option = $('<option>Three</option>');
+  var $option = $("<option>Three</option>");
 
   $select.append($option);
 
-  assert.equal(
-    $select.val(),
-    'One'
-  );
+  assert.equal($select.val(), "One");
 
   syncDone();
 });
 
-test('adding a new selected option changes the value', function (assert) {
+test("adding a new selected option changes the value", function (assert) {
   // handle IE 8 not being supported
   var expected = 4;
   if (!window.MutationObserver && !window.addEventListener) {
@@ -84,32 +71,25 @@ test('adding a new selected option changes the value', function (assert) {
     asyncDone = assert.async();
   }
 
-  var $ = require('jquery');
-  var Options = require('select2/options');
-  var Select2 = require('select2/core');
+  var $ = require("jquery");
+  var Options = require("select2/options");
+  var Select2 = require("select2/core");
 
   var $select = $(
-    '<select>' +
-      '<option>One</option>' +
-      '<option>Two</option>' +
-    '</select>'
+    "<select>" + "<option>One</option>" + "<option>Two</option>" + "</select>"
   );
 
-  $('#qunit-fixture').append($select);
+  $("#qunit-fixture").append($select);
 
   var select = new Select2($select);
 
-  select.on('selection:update', function (args) {
-    assert.equal(
-      args.data.length,
-      1,
-      'There was more than one selection'
-    );
+  select.on("selection:update", function (args) {
+    assert.equal(args.data.length, 1, "There was more than one selection");
 
     assert.equal(
       args.data[0].id,
-      'Three',
-      'The selection did not change to Three'
+      "Three",
+      "The selection did not change to Three"
     );
 
     if (expected != 2) {
@@ -117,24 +97,18 @@ test('adding a new selected option changes the value', function (assert) {
     }
   });
 
-  assert.equal(
-    $select.val(),
-    'One'
-  );
+  assert.equal($select.val(), "One");
 
-  var $option = $('<option selected>Three</option>');
+  var $option = $("<option selected>Three</option>");
 
   $select.append($option);
 
-  assert.equal(
-    $select.val(),
-    'Three'
-  );
+  assert.equal($select.val(), "Three");
 
   syncDone();
 });
 
-test('removing an unselected option changes nothing', function (assert) {
+test("removing an unselected option changes nothing", function (assert) {
   // Any browsers which support mutation observers will not trigger the event
   var expected = 4;
   if (!window.MutationObserver && !window.addEventListener) {
@@ -150,32 +124,25 @@ test('removing an unselected option changes nothing', function (assert) {
     asyncDone = assert.async();
   }
 
-  var $ = require('jquery');
-  var Options = require('select2/options');
-  var Select2 = require('select2/core');
+  var $ = require("jquery");
+  var Options = require("select2/options");
+  var Select2 = require("select2/core");
 
   var $select = $(
-    '<select>' +
-      '<option>One</option>' +
-      '<option>Two</option>' +
-    '</select>'
+    "<select>" + "<option>One</option>" + "<option>Two</option>" + "</select>"
   );
 
-  $('#qunit-fixture').append($select);
+  $("#qunit-fixture").append($select);
 
   var select = new Select2($select);
 
-  select.on('selection:update', function (args) {
-    assert.equal(
-      args.data.length,
-      1,
-      'There was more than one selection'
-    );
+  select.on("selection:update", function (args) {
+    assert.equal(args.data.length, 1, "There was more than one selection");
 
     assert.equal(
       args.data[0].id,
-      'One',
-      'The selection changed to something other than One'
+      "One",
+      "The selection changed to something other than One"
     );
 
     if (expected != 2) {
@@ -183,22 +150,16 @@ test('removing an unselected option changes nothing', function (assert) {
     }
   });
 
-  assert.equal(
-    $select.val(),
-    'One'
-  );
+  assert.equal($select.val(), "One");
 
   $select.children().eq(1).remove();
 
-  assert.equal(
-    $select.val(),
-    'One'
-  );
+  assert.equal($select.val(), "One");
 
   syncDone();
 });
 
-test('removing a selected option changes the value', function (assert) {
+test("removing a selected option changes the value", function (assert) {
   // handle IE 8 not being supported
   var expected = 3;
   if (!window.MutationObserver && !window.addEventListener) {
@@ -214,44 +175,31 @@ test('removing a selected option changes the value', function (assert) {
     asyncDone = assert.async();
   }
 
-  var $ = require('jquery');
-  var Options = require('select2/options');
-  var Select2 = require('select2/core');
+  var $ = require("jquery");
+  var Options = require("select2/options");
+  var Select2 = require("select2/core");
 
   var $select = $(
-    '<select>' +
-      '<option>One</option>' +
-      '<option>Two</option>' +
-    '</select>'
+    "<select>" + "<option>One</option>" + "<option>Two</option>" + "</select>"
   );
 
-  $('#qunit-fixture').append($select);
+  $("#qunit-fixture").append($select);
 
   var select = new Select2($select);
 
-  select.on('selection:update', function (args) {
-    assert.equal(
-      args.data.length,
-      1,
-      'There was more than one selection'
-    );
+  select.on("selection:update", function (args) {
+    assert.equal(args.data.length, 1, "There was more than one selection");
 
     if (expected != 2) {
       asyncDone();
     }
   });
 
-  assert.equal(
-    $select.val(),
-    'One'
-  );
+  assert.equal($select.val(), "One");
 
   $select.children().eq(0).remove();
 
-  assert.equal(
-    $select.val(),
-    'Two'
-  );
+  assert.equal($select.val(), "Two");
 
   syncDone();
 });

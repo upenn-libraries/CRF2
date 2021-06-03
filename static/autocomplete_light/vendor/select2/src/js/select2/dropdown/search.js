@@ -1,8 +1,5 @@
-define([
-  'jquery',
-  '../utils'
-], function ($, Utils) {
-  function Search () { }
+define(["jquery", "../utils"], function ($, Utils) {
+  function Search() {}
 
   Search.prototype.render = function (decorated) {
     var $rendered = decorated.call(this);
@@ -12,11 +9,11 @@ define([
         '<input class="select2-search__field" type="search" tabindex="-1"' +
         ' autocomplete="off" autocorrect="off" autocapitalize="none"' +
         ' spellcheck="false" role="textbox" />' +
-      '</span>'
+        "</span>"
     );
 
     this.$searchContainer = $search;
-    this.$search = $search.find('input');
+    this.$search = $search.find("input");
 
     $rendered.prepend($search);
 
@@ -28,8 +25,8 @@ define([
 
     decorated.call(this, container, $container);
 
-    this.$search.on('keydown', function (evt) {
-      self.trigger('keypress', evt);
+    this.$search.on("keydown", function (evt) {
+      self.trigger("keypress", evt);
 
       self._keyUpPrevented = evt.isDefaultPrevented();
     });
@@ -37,17 +34,17 @@ define([
     // Workaround for browsers which do not support the `input` event
     // This will prevent double-triggering of events for browsers which support
     // both the `keyup` and `input` events.
-    this.$search.on('input', function (evt) {
+    this.$search.on("input", function (evt) {
       // Unbind the duplicated `keyup` event
-      $(this).off('keyup');
+      $(this).off("keyup");
     });
 
-    this.$search.on('keyup input', function (evt) {
+    this.$search.on("keyup input", function (evt) {
       self.handleSearch(evt);
     });
 
-    container.on('open', function () {
-      self.$search.attr('tabindex', 0);
+    container.on("open", function () {
+      self.$search.attr("tabindex", 0);
 
       self.$search.focus();
 
@@ -56,27 +53,27 @@ define([
       }, 0);
     });
 
-    container.on('close', function () {
-      self.$search.attr('tabindex', -1);
+    container.on("close", function () {
+      self.$search.attr("tabindex", -1);
 
-      self.$search.val('');
+      self.$search.val("");
       self.$search.blur();
     });
 
-    container.on('focus', function () {
+    container.on("focus", function () {
       if (!container.isOpen()) {
         self.$search.focus();
       }
     });
 
-    container.on('results:all', function (params) {
-      if (params.query.term == null || params.query.term === '') {
+    container.on("results:all", function (params) {
+      if (params.query.term == null || params.query.term === "") {
         var showSearch = self.showSearch(params);
 
         if (showSearch) {
-          self.$searchContainer.removeClass('select2-search--hide');
+          self.$searchContainer.removeClass("select2-search--hide");
         } else {
-          self.$searchContainer.addClass('select2-search--hide');
+          self.$searchContainer.addClass("select2-search--hide");
         }
       }
     });
@@ -86,8 +83,8 @@ define([
     if (!this._keyUpPrevented) {
       var input = this.$search.val();
 
-      this.trigger('query', {
-        term: input
+      this.trigger("query", {
+        term: input,
       });
     }
 

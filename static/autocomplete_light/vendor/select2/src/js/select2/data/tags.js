@@ -1,19 +1,17 @@
-define([
-  'jquery'
-], function ($) {
-  function Tags (decorated, $element, options) {
-    var tags = options.get('tags');
+define(["jquery"], function ($) {
+  function Tags(decorated, $element, options) {
+    var tags = options.get("tags");
 
-    var createTag = options.get('createTag');
+    var createTag = options.get("createTag");
 
     if (createTag !== undefined) {
       this.createTag = createTag;
     }
 
-    var insertTag = options.get('insertTag');
+    var insertTag = options.get("insertTag");
 
     if (insertTag !== undefined) {
-        this.insertTag = insertTag;
+      this.insertTag = insertTag;
     }
 
     decorated.call(this, $element, options);
@@ -40,21 +38,23 @@ define([
       return;
     }
 
-    function wrapper (obj, child) {
+    function wrapper(obj, child) {
       var data = obj.results;
 
       for (var i = 0; i < data.length; i++) {
         var option = data[i];
 
-        var checkChildren = (
+        var checkChildren =
           option.children != null &&
-          !wrapper({
-            results: option.children
-          }, true)
-        );
+          !wrapper(
+            {
+              results: option.children,
+            },
+            true
+          );
 
-        var optionText = (option.text || '').toUpperCase();
-        var paramsTerm = (params.term || '').toUpperCase();
+        var optionText = (option.text || "").toUpperCase();
+        var paramsTerm = (params.term || "").toUpperCase();
 
         var checkText = optionText === paramsTerm;
 
@@ -78,7 +78,7 @@ define([
 
       if (tag != null) {
         var $option = self.option(tag);
-        $option.attr('data-select2-tag', true);
+        $option.attr("data-select2-tag", true);
 
         self.addOptions([$option]);
 
@@ -96,13 +96,13 @@ define([
   Tags.prototype.createTag = function (decorated, params) {
     var term = $.trim(params.term);
 
-    if (term === '') {
+    if (term === "") {
       return null;
     }
 
     return {
       id: term,
-      text: term
+      text: term,
     };
   };
 
@@ -113,7 +113,7 @@ define([
   Tags.prototype._removeOldTags = function (_) {
     var tag = this._lastTag;
 
-    var $options = this.$element.find('option[data-select2-tag]');
+    var $options = this.$element.find("option[data-select2-tag]");
 
     $options.each(function () {
       if (this.selected) {

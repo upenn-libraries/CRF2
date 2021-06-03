@@ -4,10 +4,10 @@ define(function () {
     inputTooLong: function (args) {
       var overChars = args.input.length - args.maximum;
 
-      var message = 'Vui lòng nhập ít hơn ' + overChars + ' ký tự';
+      var message = "Vui lòng nhập ít hơn " + overChars + " ký tự";
 
       if (overChars != 1) {
-        message += 's';
+        message += "s";
       }
 
       return message;
@@ -15,23 +15,23 @@ define(function () {
     inputTooShort: function (args) {
       var remainingChars = args.minimum - args.input.length;
 
-      var message = 'Vui lòng nhập nhiều hơn ' + remainingChars + ' ký tự';
+      var message = "Vui lòng nhập nhiều hơn " + remainingChars + " ký tự";
 
       return message;
     },
     loadingMore: function () {
-      return 'Đang lấy thêm kết quả…';
+      return "Đang lấy thêm kết quả…";
     },
     maximumSelected: function (args) {
-      var message = 'Chỉ có thể chọn được ' + args.maximum + ' lựa chọn';
+      var message = "Chỉ có thể chọn được " + args.maximum + " lựa chọn";
 
       return message;
     },
     noResults: function () {
-      return 'Không tìm thấy kết quả';
+      return "Không tìm thấy kết quả";
     },
     searching: function () {
-      return 'Đang tìm…';
-    }
+      return "Đang tìm…";
+    },
   };
 });
