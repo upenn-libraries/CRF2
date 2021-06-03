@@ -4,6 +4,7 @@ import time
 import urllib.parse
 from configparser import ConfigParser
 
+from canvas import api as canvas_api
 from django.contrib import messages
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
@@ -24,6 +25,7 @@ from django.views.decorators.cache import cache_page
 from django.views.generic import TemplateView
 from django_celery_beat.models import CrontabSchedule, IntervalSchedule, PeriodicTask
 from django_filters import rest_framework as filters
+from OpenData import library
 from rest_framework import generics, permissions, status, viewsets
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.pagination import PageNumberPagination
@@ -41,7 +43,6 @@ from rest_framework.utils import html
 from rest_framework.utils.urls import remove_query_param, replace_query_param
 from rest_framework.views import APIView
 
-from canvas import api as canvas_api
 from course import email_processor, utils, views
 from course.forms import (
     CanvasSiteForm,
@@ -53,7 +54,6 @@ from course.forms import (
 from course.models import *  # Course, Notice, Request, School, Subject, AutoAdd
 from course.permissions import IsOwnerOrReadOnly
 from course.serializers import *  # CourseSerializer, UserSerializer, NoticeSerializer, RequestSerializer, SchoolSerializer, SubjectSerializer, AutoAddSerializer
-from OpenData import library
 
 """
 For more 'Detailed descriptions, with full methods and attributes, for each

@@ -126,8 +126,7 @@ To pull changes from GitLab:
 
 To restart the app (run this after pulling changes):
 
-1. `cd /home/django/crf2/crf2`
-2. `touch wsgi.py`
+- `touch /home/django/crf2/crf2/wsgi.py`
 
 Working with the virtual environment:
 
@@ -136,5 +135,7 @@ Working with the virtual environment:
 
 ### Logs
 
-Logs for `pull_instructors`: "/home/django/crf2/logs/"  
-Logs for `pull_courses`: "/var/log/celery/"
+- /var/log/crf2/crf2_access.log
+- /var/log/crf2/crf2_error.log
+- /home/django/crf2/logs/ (`pull_instructors`)
+- /var/log/celery/ (`pull_courses`)
