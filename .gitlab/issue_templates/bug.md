@@ -4,7 +4,7 @@ Please read this!
 Before opening a new issue, make sure to search for keywords in the issues
 filtered by the "bug" label:
 
-- https://gitlab.library.upenn.edu/benrosen/penn-canvas/-/issues?label_name%5B%5D=bug
+- https://gitlab.library.upenn.edu/course-request/CRF2/-/issues?label_name%5B%5D=bug
 
 and verify the issue you're about to submit isn't a duplicate.
 --->
