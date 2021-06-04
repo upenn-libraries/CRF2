@@ -2,9 +2,9 @@
 Please read this!
 
 Before opening a new issue, make sure to search for keywords in the issues
-filtered by the "feature" label:
+filtered by the "enhancement" label:
 
-- https://gitlab.library.upenn.edu/course-request/CRF2/-/issues?label_name%5B%5D=feature
+- https://gitlab.library.upenn.edu/course-request/CRF2/-/issues?label_name%5B%5D=enhancement
 
 and verify the issue you're about to submit isn't a duplicate.
 --->
@@ -15,6 +15,6 @@ and verify the issue you're about to submit isn't a duplicate.
 
 ### Proposal
 
-<!-- Use this section to explain the feature and how it will work. -->
+<!-- Use this section to explain the enhancement and how it will work. -->
 
-/label ~"feature"
+/label ~"enhancement"
