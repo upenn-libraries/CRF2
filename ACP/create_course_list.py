@@ -87,9 +87,7 @@ def create_unused_sis_list(
         # notUsedSIS.write(id + "\n")
 
     print("-> Finished Generating: ", outputfile)
-    print(
-        "-> Please Check `ACP/logs/canvas.log` for a list of SIS IDs arleady " "in used"
-    )
+    print("-> Please Check `ACP/logs/canvas.log` for a list of SIS IDs arleady in used")
     print(
         "-> NEXT: To create Requests for these courses please run "
         "`create_requests(inputfile='%s')`" % outputfile

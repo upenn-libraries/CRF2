@@ -402,7 +402,11 @@ class RequestSerializer(DynamicFieldsModelSerializer):  # HyperlinkedModelSerial
                         print("error validate pennkey")
                         raise serializers.ValidationError(
                             {
-                                "error": "an error occurred please check that the pennkey's you entered are correct and add the course information to the additional instructions field."
+                                "error": (
+                                    "an error occurred please check that the pennkey's"
+                                    " you entered are correct and add the course"
+                                    " information to the additional instructions field."
+                                )
                             }
                         )
 

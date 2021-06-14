@@ -3,7 +3,10 @@ LOGGING = {
     "disable_existing_loggers": False,
     "formatters": {
         "large": {
-            "format": "%(asctime)s  %(levelname)s  %(process)d  %(pathname)s  %(funcName)s  %(lineno)d  %(message)s  "
+            "format": (
+                "%(asctime)s  %(levelname)s  %(process)d  %(pathname)s  %(funcName)s "
+                " %(lineno)d  %(message)s  "
+            )
         },
         "tiny": {"format": "%(asctime)s  %(message)s  "},
     },
