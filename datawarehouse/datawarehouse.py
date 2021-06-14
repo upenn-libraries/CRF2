@@ -50,7 +50,7 @@ def get_user(penn_id):
         return [first_name, last_name, email, pennkey]
 
 
-def pull_course(section, term=None):
+def inspect_course(section, term=None):
     cursor = get_cursor()
     cursor.execute(
         """
