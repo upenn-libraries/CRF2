@@ -31,10 +31,12 @@ def get_open_data():
 
 
 def roman_title(title):
-    roman_numeral = findall(r" [MDCLXVI]+", title)
+    roman_numeral = findall(" [MDCLXVI]{2,}", title)
     title = capwords(title)
     if roman_numeral:
-        title = title.replace(roman_numeral[-1].upper(), roman_numeral[-1][1:])
+        title_case = capwords(roman_numeral[-1])
+        upper_case = roman_numeral[-1].upper()
+        title = title.replace(title_case, upper_case)
     return title
 
 
@@ -169,10 +171,7 @@ def pull_courses(term):
             n_s = course_code[:-5][-6:]
             course_number = n_s[:3]
             section_number = n_s[-3:]
-            roman_numeral = findall(r"[MDCLXVI]+", title)
-            title = capwords(title)
-            if roman_numeral:
-                title = roman_title(title)
+            title = roman_title(title)
             year = term[:4]
 
             Course.objects.update_or_create(
