@@ -61,17 +61,17 @@ class EmailChangeForm(forms.Form):
     """
 
     error_messages = {
-        "email_mismatch": ("The two email addresses fields didn't match."),
-        "not_changed": ("The email address is the same as the one already defined."),
+        "email_mismatch": "The two email addresses fields didn't match.",
+        "not_changed": "The email address is the same as the one already defined.",
     }
 
     new_email1 = forms.EmailField(
-        label=("New email address"),
+        label="New email address",
         widget=forms.EmailInput,
     )
 
     new_email2 = forms.EmailField(
-        label=("New email address confirmation"),
+        label="New email address confirmation",
         widget=forms.EmailInput,
     )
 

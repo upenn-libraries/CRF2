@@ -7,7 +7,6 @@ from re import findall
 from string import capwords
 
 import cx_Oracle
-
 from course import utils
 from course.models import Activity, Course, Profile, School, Subject, User
 from OpenData.library import OpenData
@@ -51,6 +50,85 @@ def get_user(penn_id):
     )
     for first_name, last_name, email, pennkey in cursor:
         return [first_name, last_name, email, pennkey]
+
+
+def inspect_course(section, term=None):
+    cursor = get_cursor()
+    cursor.execute(
+        """
+    SELECT
+      cs.section_id
+      || cs.term section,
+      cs.section_id,
+      cs.term,
+      cs.subject_area subject_id,
+      cs.tuition_school school_id,
+      cs.xlist,
+      cs.xlist_primary,
+      cs.activity,
+      cs.section_dept department,
+      cs.section_division division,
+      trim(cs.title) srs_title,
+      cs.status srs_status,
+      cs.schedule_revision
+    FROM
+      dwadmin.course_section cs
+    WHERE
+      cs.activity IN (
+        'LEC', 'REC', 'LAB', 'SEM', 'CLN', 'CRT', 'PRE', 'STU', 'ONL', 'HYB'
+        )
+    AND cs.tuition_school NOT IN ('WH', 'LW')
+    AND cs.status in ('O')
+    AND cs.section_id = :section""",
+        section=section,
+    )
+    for (
+        course_code,
+        section_id,
+        course_term,
+        subject_area,
+        school,
+        xc,
+        xc_code,
+        activity,
+        section_dept,
+        section_division,
+        title,
+        status,
+        rev,
+    ) in cursor:
+        if term is None:
+            print(
+                course_code,
+                section_id,
+                course_term,
+                subject_area,
+                school,
+                xc,
+                xc_code,
+                activity,
+                section_dept,
+                section_division,
+                title,
+                status,
+                rev,
+            )
+        elif course_term == term:
+            print(
+                course_code,
+                section_id,
+                course_term,
+                subject_area,
+                school,
+                xc,
+                xc_code,
+                activity,
+                section_dept,
+                section_division,
+                title,
+                status,
+                rev,
+            )
 
 
 def pull_courses(term):
