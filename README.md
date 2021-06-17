@@ -96,6 +96,14 @@ If you make changes to your "models.py" file, you will need to run:
 1. `python manage.py makemigrations`
 2. `python manage.py migrate`
 
+To interactively query the sqlite3 database, run `python manage.py dbshell`.
+
+- To view tables: `.tables`
+- To inspect tables:
+  1. `.headers on`
+  2. `.mode column`
+  3. `pragma table_info(<table_name>)`
+
 ### Data Warehouse
 
 To query the Data Warehouse directly, make sure you are connected through the GlobalProtect VPN and run:
@@ -139,3 +147,14 @@ Working with the virtual environment:
 - /var/log/crf2/crf2_error.log
 - /home/django/crf2/logs/ (`pull_instructors`)
 - /var/log/celery/ (`pull_courses`)
+
+## Workflow
+
+It is not currently possible to establish a complete local development environment. Until this can be fixed, the recommended workflow is as follows:
+
+1. Create a new (issue)[https://gitlab.library.upenn.edu/course-request/CRF2/-/issues] explaining the bug or enhancement (use the templates and appropriate tags when possible).
+2. Create a branch for the issue.
+3. Commit code changes to the issue branch.
+4. Push changes from the issue branch to the "develop" branch.
+5. Pull the "develop" branch into the CRF development instance and test changes (remember to interface with the test instance of Canvas when appropriate).
+6. When satisfied with the results when using "develop," merge develop to "master" and close the issue.
