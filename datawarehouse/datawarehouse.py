@@ -7,6 +7,7 @@ from re import findall
 from string import capwords
 
 import cx_Oracle
+
 from course import utils
 from course.models import Activity, Course, Profile, School, Subject, User
 from OpenData.library import OpenData
