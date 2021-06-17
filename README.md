@@ -152,7 +152,7 @@ Working with the virtual environment:
 
 It is not currently possible to establish a complete local development environment. Until this can be fixed, the recommended workflow is as follows:
 
-1. Create a new (issue)[https://gitlab.library.upenn.edu/course-request/CRF2/-/issues] explaining the bug or enhancement (use the templates and appropriate tags when possible).
+1. Create a new [issue](https://gitlab.library.upenn.edu/course-request/CRF2/-/issues) explaining the bug or enhancement (use the templates and appropriate tags when possible).
 2. Create a branch for the issue.
 3. Commit code changes to the issue branch.
 4. Push changes from the issue branch to the "develop" branch.
