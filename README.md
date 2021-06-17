@@ -158,3 +158,4 @@ It is not currently possible to establish a complete local development environme
 4. Push changes from the issue branch to the "develop" branch.
 5. Pull the "develop" branch into the CRF development instance and test changes (remember to interface with the test instance of Canvas when appropriate).
 6. When satisfied with the results when using "develop," merge develop to "master" and close the issue.
+7. Pull the "master" branch into the CRF production instance and restart the app (see above).
