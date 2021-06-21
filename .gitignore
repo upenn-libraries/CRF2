@@ -13,6 +13,6 @@ ACP/data/
 .python-version
 
 .idea/
-.DS_Store
+**/.DS_Store
 
 .flake8
