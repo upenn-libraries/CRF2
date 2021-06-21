@@ -56,30 +56,38 @@ def inspect_course(section, term=None):
     cursor = get_cursor()
     cursor.execute(
         """
-    SELECT
-      cs.section_id
-      || cs.term section,
-      cs.section_id,
-      cs.term,
-      cs.subject_area subject_id,
-      cs.tuition_school school_id,
-      cs.xlist,
-      cs.xlist_primary,
-      cs.activity,
-      cs.section_dept department,
-      cs.section_division division,
-      trim(cs.title) srs_title,
-      cs.status srs_status,
-      cs.schedule_revision
-    FROM
-      dwadmin.course_section cs
-    WHERE
-      cs.activity IN (
-        'LEC', 'REC', 'LAB', 'SEM', 'CLN', 'CRT', 'PRE', 'STU', 'ONL', 'HYB'
-        )
-    AND cs.tuition_school NOT IN ('WH', 'LW')
-    AND cs.status in ('O')
-    AND cs.section_id = :section""",
+        SELECT
+            cs.section_id || cs.term section,
+            cs.section_id,
+            cs.term,
+            cs.subject_area subject_id,
+            cs.tuition_school school_id,
+            cs.xlist,
+            cs.xlist_primary,
+            cs.activity,
+            cs.section_dept department,
+            cs.section_division division,
+            trim(cs.title) srs_title,
+            cs.status srs_status,
+            cs.schedule_revision
+        FROM dwadmin.course_section cs
+        WHERE
+            cs.activity IN (
+                'LEC',
+                'REC',
+                'LAB',
+                'SEM',
+                'CLN',
+                'CRT',
+                'PRE',
+                'STU',
+                'ONL',
+                'HYB'
+            )
+        AND cs.tuition_school NOT IN ('WH', 'LW')
+        AND cs.status in ('O')
+        AND cs.section_id = :section
+        """,
         section=section,
     )
     for (
@@ -136,30 +144,39 @@ def pull_courses(term):
     cursor = get_cursor()
     cursor.execute(
         """
-    SELECT
-      cs.section_id
-      || cs.term section,
-      cs.section_id,
-      cs.term,
-      cs.subject_area subject_id,
-      cs.tuition_school school_id,
-      cs.xlist,
-      cs.xlist_primary,
-      cs.activity,
-      cs.section_dept department,
-      cs.section_division division,
-      trim(cs.title) srs_title,
-      cs.status srs_status,
-      cs.schedule_revision
-    FROM
-      dwadmin.course_section cs
-    WHERE
-      cs.activity IN (
-        'LEC', 'REC', 'LAB', 'SEM', 'CLN', 'CRT', 'PRE', 'STU', 'ONL', 'HYB'
-        )
-    AND cs.tuition_school NOT IN ('WH', 'LW')
-    AND cs.status in ('O')
-    AND cs.term = :term""",
+        SELECT
+            cs.section_id || cs.term section,
+            cs.section_id,
+            cs.term,
+            cs.subject_area subject_id,
+            cs.tuition_school school_id,
+            cs.xlist,
+            cs.xlist_primary,
+            cs.activity,
+            cs.section_dept department,
+            cs.section_division division,
+            trim(cs.title) srs_title,
+            cs.status srs_status,
+            cs.schedule_revision
+        FROM
+            dwadmin.course_section cs
+        WHERE
+            cs.activity IN (
+                'LEC',
+                'REC',
+                'LAB',
+                'SEM',
+                'CLN',
+                'CRT',
+                'PRE',
+                'STU',
+                'ONL',
+                'HYB'
+            )
+        AND cs.tuition_school NOT IN ('WH', 'LW')
+        AND cs.status in ('O')
+        AND cs.term = :term
+        """,
         term=term,
     )
 
@@ -178,72 +195,66 @@ def pull_courses(term):
         status,
         rev,
     ) in cursor:
-        print(
-            course_code,
-            section_id,
-            term,
-            subject_area,
-            school,
-            xc,
-            xc_code,
-            activity,
-            section_dept,
-            section_division,
-            title,
-            status,
-            rev,
-        )
 
         course_code = course_code.replace(" ", "")
-        primary_crosslist = ""
         subject_area = subject_area.replace(" ", "")
         xc_code = xc_code.replace(" ", "")
-        # print("subject_area", subject_area)
-        # print("adding ", course_code)
+        primary_crosslist = ""
+
         try:
             subject = Subject.objects.get(abbreviation=subject_area)
-        except:
-            getLogger("error_logger").error("couldnt find subject %s ", subject_area)
-            print("trouble finding subject: ", subject_area)
-            school_code = open_data.find_school_by_subj(subject_area)
-            if school_code:
-                try:
-                    school = School.objects.get(opendata_abbr=school_code)
-                    # NEEDS TO GET SUBJECT AREA NAME
-                    subject = Subject.objects.create(
-                        abbreviation=subject_area, name=subject_area, schools=school
-                    )
-                except:
-                    # print("couldn't find school ", school_code)
-                    pass
+        except Exception:
+            try:
+                school_code = open_data.find_school_by_subj(subject_area)
+                school = School.objects.get(opendata_abbr=school_code)
+                subject = Subject.objects.create(
+                    abbreviation=subject_area, name=subject_area, schools=school
+                )
+            except Exception as error:
+                getLogger("error_logger").error(
+                    f"couldnt find subject {subject_area}: {error}"
+                )
+                subject = ""
+                print(f"{course_code}: Subject not found")
 
-        # check if this course is crosslisted with anything
-        if xc:  # xc can be 'S', 'P' or None
-            if xc == "S":  # this is the secondary cross listing
+        if xc:
+            if xc == "S":
                 primary_crosslist = xc_code + term
-            else:
-                primary_crosslist = ""
+
             p_subj = xc_code[:-6]
+
             try:
                 primary_subject = Subject.objects.get(abbreviation=p_subj)
-            except:
-                getLogger("error_logger").error("couldnt find subject %s ", p_subj)
-                print("trouble finding primary subject: ", p_subj)
-                school_code = open_data.find_school_by_subj(p_subj)
-                school = School.objects.get(opendata_abbr=school_code)
-                primary_subject = Subject.objects.create(
-                    abbreviation=p_subj, name=p_subj, schools=school
-                )
+            except Exception:
+                try:
+                    school_code = open_data.find_school_by_subj(p_subj)
+                    school = School.objects.get(opendata_abbr=school_code)
+                    primary_subject = Subject.objects.create(
+                        abbreviation=p_subj, name=p_subj, schools=school
+                    )
+                except Exception as error:
+                    getLogger("error_logger").error(
+                        f"couldnt find subject {p_subj}: {error}"
+                    )
+                    primary_subject = ""
+                    print(f"{course_code}: Primary subject not found")
         else:
-            # print("crosslist_primary", xc_code, "not found")
             primary_subject = subject
 
-        school = primary_subject.schools
+        if primary_subject:
+            school = primary_subject.schools
+        else:
+            school = ""
+
         try:
             activity = Activity.objects.get(abbr=activity)
-        except:
-            getLogger("error_logger").error("couldnt find activity %s ", activity)
-            activity = Activity.objects.create(abbr=activity, name=activity)
+        except Exception:
+            try:
+                activity = Activity.objects.create(abbr=activity, name=activity)
+            except Exception:
+                getLogger("error_logger").error("couldnt find activity %s ", activity)
+                activity = ""
+                print(f"{course_code}: Activity not found")
 
         try:
             n_s = course_code[:-5][-6:]
@@ -255,7 +266,7 @@ def pull_courses(term):
             Course.objects.update_or_create(
                 course_code=course_code,
                 defaults={
-                    "owner": User.objects.get(username="mfhodges"),
+                    "owner": User.objects.get(username="benrosen"),
                     "course_term": term[-1],
                     "course_activity": activity,
                     "course_subject": subject,
@@ -269,15 +280,7 @@ def pull_courses(term):
                 },
             )
 
-        except Exception as e:
-            # check if updates !
-            # 1. check if the course exists
-            #   a. find the course
-            #   b. check if the primary_crosslist and course_primary_subject
-            #   needs to be updated
-            #   c. update the crosslistings?
-            #
-            # 2. if doesnt exist -- report error
+        except Exception as error:
             print(
                 {
                     "course_term": term,
@@ -293,33 +296,58 @@ def pull_courses(term):
                     "year": year,
                 }
             )
-
-            print(type(e), e.__cause__, e)
-
-            # course doesnt already exist
-            #    print(type(e),e.__cause__)
-            #    #getLogger("error_logger").error("couldnt add course %s
-            #    #",datum["section_id"])
+            print(type(error), error.__cause__, error)
     print("DONE LOADING COURSES")
 
-    # check if it already exists
+
+def create_instructors(term):
+    cursor = get_cursor()
+    cursor.execute(
+        """
+        SELECT
+            e.FIRST_NAME,
+            e.LAST_NAME,
+            e.PENNKEY,
+            e.PENN_ID,
+            e.EMAIL_ADDRESS
+        FROM dwadmin.course_section_instructor cs
+        JOIN dwadmin.employee_general_v e
+        ON cs.Instructor_Penn_Id=e.PENN_ID
+        WHERE cs.TERM= :term
+        """,
+        term=term,
+    )
+    for first_name, last_name, pennkey, penn_id, email in cursor:
+        try:
+            first_name = first_name.title()
+            last_name = last_name.title()
+            instructor = User.objects.create_user(
+                username=pennkey,
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
+            )
+            Profile.objects.create(user=instructor, penn_id=penn_id)
+        except Exception as error:
+            print(error)
 
 
 def pull_instructors(term):
     cursor = get_cursor()
     cursor.execute(
         """
-    SELECT
-    e.FIRST_NAME,
-    e.LAST_NAME,
-    e.PENNKEY,
-    e.PENN_ID,
-    e.EMAIL_ADDRESS,
-    cs.Section_Id
-    FROM
-    dwadmin.course_section_instructor cs
-    JOIN DWADMIN.EMPLOYEE_GENERAL_V e ON cs.Instructor_Penn_Id=e.PENN_ID
-    WHERE cs.TERM= :term""",
+        SELECT
+            e.FIRST_NAME,
+            e.LAST_NAME,
+            e.PENNKEY,
+            e.PENN_ID,
+            e.EMAIL_ADDRESS,
+            cs.Section_Id
+        FROM dwadmin.course_section_instructor cs
+        JOIN dwadmin.employee_general_v e
+        ON cs.Instructor_Penn_Id=e.PENN_ID
+        WHERE cs.TERM= :term
+        """,
         term=term,
     )
 
@@ -332,7 +360,7 @@ def pull_instructors(term):
             if not course.requested:
                 try:
                     instructor = User.objects.get(username=pennkey)
-                except:
+                except Exception:
                     try:
                         first_name = first_name.title()
                         last_name = last_name.title()
@@ -343,12 +371,12 @@ def pull_instructors(term):
                             email=email,
                         )
                         Profile.objects.create(user=instructor, penn_id=penn_id)
-                    except:
+                    except Exception:
                         instructor = None
                 if instructor:
                     try:
                         NEW_INSTRUCTOR_VALUES[course_code].append(instructor)
-                    except:
+                    except Exception:
                         NEW_INSTRUCTOR_VALUES[course_code] = [instructor]
                 else:
                     message = (
@@ -356,7 +384,7 @@ def pull_instructors(term):
                         f"{last_name} | {pennkey} | {penn_id} | {email} | {section_id}"
                     )
                     getLogger("error_logger").error(message)
-        except:
+        except Exception:
             message = f"Couldn't find course {course_code}"
             getLogger("error_logger").error(message)
 
@@ -367,7 +395,7 @@ def pull_instructors(term):
             for instructor in instructors:
                 course.instructors.add(instructor)
             course.save()
-        except:
+        except Exception:
             message = "Error adding new instructor(s) to course"
             getLogger("error_logger").error(message)
 
@@ -403,30 +431,38 @@ def delete_canceled_courses(term):
     cursor = get_cursor()
     cursor.execute(
         """
-    SELECT
-      cs.section_id
-      || cs.term section,
-      cs.section_id,
-      cs.term,
-      cs.subject_area subject_id,
-      cs.tuition_school school_id,
-      cs.xlist,
-      cs.xlist_primary,
-      cs.activity,
-      cs.section_dept department,
-      cs.section_division division,
-      trim(cs.title) srs_title,
-      cs.status srs_status,
-      cs.schedule_revision
-    FROM
-      dwadmin.course_section cs
-    WHERE
-      cs.activity IN (
-        'LEC', 'REC', 'LAB', 'SEM', 'CLN', 'CRT', 'PRE', 'STU', 'ONL', 'HYB'
-        )
-    AND cs.status IN ('X')
-    AND cs.tuition_school NOT IN ('WH', 'LW')
-    AND cs.term= :term""",
+        SELECT
+            cs.section_id || cs.term section,
+            cs.section_id,
+            cs.term,
+            cs.subject_area subject_id,
+            cs.tuition_school school_id,
+            cs.xlist,
+            cs.xlist_primary,
+            cs.activity,
+            cs.section_dept department,
+            cs.section_division division,
+            trim(cs.title) srs_title,
+            cs.status srs_status,
+            cs.schedule_revision
+        FROM dwadmin.course_section cs
+        WHERE
+            cs.activity IN (
+                'LEC',
+                'REC',
+                'LAB',
+                'SEM',
+                'CLN',
+                'CRT',
+                'PRE',
+                'STU',
+                'ONL',
+                'HYB'
+            )
+        AND cs.status IN ('X')
+        AND cs.tuition_school NOT IN ('WH', 'LW')
+        AND cs.term= :term
+        """,
         term=term,
     )
     # AND cs.status IN ('X','H')
@@ -462,7 +498,7 @@ def delete_canceled_courses(term):
                 # course.multisection_request or course.crosslisted_request
                 try:
                     canvas_site = course.request.canvas_instance
-                except:
+                except Exception:
                     print("no main request:%s" % course.course_code)
                     if course.multisection_request:
                         canvas_site = course.multisection_request.canvas_instance
@@ -490,7 +526,7 @@ def delete_canceled_courses(term):
             else:
                 print("deleting ", course_code)
                 course.delete()
-        except:
+        except Exception:
             # the canceled course doesnt exist in the CRF... no problem for us then
             pass
 
