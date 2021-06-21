@@ -1,7 +1,6 @@
 *.sqlite3
 
 *.log
-/logs
 
 venv/
 
