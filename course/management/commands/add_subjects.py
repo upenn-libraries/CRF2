@@ -10,7 +10,6 @@ from OpenData.library import OpenData
 config = ConfigParser()
 config.read("config/config.ini")
 
-
 school_subj = {
     "AS": [
         "AAMW",
@@ -224,110 +223,81 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "-d", "--opendata", action="store_true", help="pull from OpenData API"
+            "-o",
+            "--opendata",
+            action="store_true",
+            help="Pull subjects from the OpenData API",
         )
-        parser.add_argument(
-            "-l", "--localstore", action="store_true", help="pull from Local Store"
-        )
-
-        # parser.add_argument('-p', '--prefix', type=str, help='Define a
-        # username prefix')
-        # parser.add_argument('-a', '--admin', action='store_true', help='Create
-        # an admin account')
-        # parser.add_argument('-c', '--courseware', action='store_true',
-        # help='Quick add Courseware Support team as Admins')
 
     def handle(self, *args, **kwargs):
-        # courseware = kwargs['courseware']
-        opendata = kwargs["opendata"]
+        open_data = kwargs["opendata"]
 
-        if opendata:
+        if open_data:
             fails = 0
             domain = config.get("opendata", "domain")
-            id = config.get("opendata", "id")
+            open_data_id = config.get("opendata", "id")
             key = config.get("opendata", "key")
-            print(domain, id, key)
-            OData = OpenData(base_url=domain, id=id, key=key)
-            # saved for special lookups
-            OData_lookup = OpenData(base_url=domain, id=id, key=key)
-            # saved for special lookups
-            OData_lookup = OpenData(base_url=domain, id=id, key=key)
-            data = OData.get_available_subj()
-            total = len(data)
-            print(data)
-            # key is the abbr, #value is the name
-            for key, value in data.items():
-                # check if it exists!
+            open_data_connection = OpenData(base_url=domain, id=open_data_id, key=key)
+            subjects = open_data_connection.get_available_subj()
+            subjects_total = len(subjects)
+            for abbreviation, subject_name in subjects.items():
                 try:
-                    subject = Subject.objects.get(abbreviation=key)
-                    print("found subject", subject)
-                except:  # it doesnt exist
-                    # need to find school first !
-                    school_code = OData_lookup.find_school_by_subj(key)
-                    # check if the school exists
+                    subject = Subject.objects.get(abbreviation=abbreviation)
+                except Exception:
+                    school_code = open_data_connection.find_school_by_subj(abbreviation)
                     try:
-                        school = School.object.get(opendata_abbr=school_code)
-                        # we have the school now we can add the subject
+                        school_name = School.objects.get(opendata_abbr=school_code)
                         subject = Subject.objects.create(
-                            abbreviation=key, name=value, visible=True, schools=school
+                            abbreviation=abbreviation,
+                            name=subject_name,
+                            visible=True,
+                            schools=school_name,
                         )
-                        print("subject", subject)
-                    except:  # the school doesnt exist either
-                        logging.getLogger("error_logger").error(
-                            "Couldn't add %s b/c couldn't find school %s",
-                            key,
-                            school_code,
+                    except Exception:
+                        message = (
+                            f"Failed to add subject {abbreviation} (school code not"
+                            f" found: {school_code})."
                         )
+                        logging.getLogger("error_logger").error(message)
+                        print(message)
                         fails += 1
-            print("failed %s/%s" % (fails, total))
-
+            if fails > 0:
+                print(f"Failed to find {fails} out of {subjects_total} total subjects.")
+            print("FINISHED")
         else:
-            with open("OpenData/OpenData.txt") as json_file:
-                data = json.load(json_file)
-                # print(data.keys()) =dict_keys(['activity_map', 'departments',
-                # 'programs', 'school_subj_map'])
-                """
-                steps
-                1. iterate through school subj mapping and take each school abbr "AS"
-                    a. look up "AS" as school object
-                    b. iterate list of subjs
-                        - look up departments['subj'] to get full name
-                    c. create Subject object
-                """
-                for (school, subjs) in data["school_subj_map"].items():
-                    print(school, subjs)
+            with open("OpenData/OpenData.json") as json_file:
+                subjects = json.load(json_file)
+                for school_name, subjects_list in subjects["school_subj_map"].items():
                     try:
-                        this_school = School.objects.get(opendata_abbr=school)
-                    except:
-                        # make this a log
+                        school = School.objects.get(opendata_abbr=school_name)
+                    except Exception:
                         logging.getLogger("error_logger").error(
-                            "couldnt find school " + school
+                            f"Failed to find {school_name}"
                         )
-                        print("couldnt find school " + school)
 
-                    #
-                    print(subjs)
-                    for subj in subjs:
-                        # need to see if exists
-                        if not Subject.objects.filter(abbreviation=subj).exists():
+                    for subject in subjects_list:
+                        if not Subject.objects.filter(abbreviation=subject).exists():
                             try:
-                                subj_name = data["departments"][subj]
+                                subject_name = subjects["departments"][subject]
                                 Subject.objects.create(
-                                    name=subj_name,
-                                    abbreviation=subj,
+                                    name=subject_name,
+                                    abbreviation=subject,
                                     visible=True,
-                                    schools=this_school,
+                                    schools=school,
                                 )
-                            except:
-                                logging.getLogger("error_logger").error(
-                                    "couldnt find subj in departments: " + subj
+                            except Exception:
+                                message = (
+                                    f"Failed to find subject {subject} in departments."
                                 )
-                                print("couldnt find subj in departments: " + subj)
+                                logging.getLogger("error_logger").error(message)
+                                print(message)
                                 Subject.objects.create(
-                                    name=subj + "-- FIX ME",
-                                    abbreviation=subj,
+                                    name=subject + "-- FIX ME",
+                                    abbreviation=subject,
                                     visible=True,
-                                    schools=this_school,
+                                    schools=school,
                                 )
                         else:
-                            print("subject already exists: " + subj)
+                            print(f"Subject {subject} already exists.")
+
+            print("FINISHED")

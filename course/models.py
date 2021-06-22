@@ -407,20 +407,20 @@ class Course(models.Model):
     def find_sections(self):
         # when all but the course code is the same ?
         # filter all courses that have the same <subj>,<code>, <term>
-        print(
-            "in get sections",
-            self.course_subject,
-            self.course_number,
-            self.course_term,
-            self.year,
-        )
+        # print(
+        #     "in get sections",
+        #     self.course_subject,
+        #     self.course_number,
+        #     self.course_term,
+        #     self.year,
+        # )
         courses = Course.objects.filter(
             Q(course_subject=self.course_subject)
             & Q(course_number=self.course_number)
             & Q(course_term=self.course_term)
             & Q(year=self.year)
         ).exclude(course_code=self.course_code)
-        print("sections", courses)
+        # print("sections", courses)
         return courses
 
     def srs_format(self):

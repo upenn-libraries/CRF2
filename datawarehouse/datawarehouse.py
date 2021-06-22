@@ -9,6 +9,7 @@ from re import findall
 from string import capwords
 
 import cx_Oracle
+
 from course import utils
 from course.models import Activity, Course, Profile, School, Subject, User
 from OpenData.library import OpenData
@@ -207,7 +208,11 @@ def pull_courses(term):
     ) in cursor:
 
         course_code = course_code.replace(" ", "")
+        if section_id == "VSUR601001":
+            print(subject_area)
         subject_area = subject_area.replace(" ", "")
+        if section_id == "VSUR601001":
+            print(subject_area)
         xc_code = xc_code.replace(" ", "")
         primary_crosslist = ""
 
@@ -216,7 +221,11 @@ def pull_courses(term):
         except Exception:
             try:
                 school_code = open_data.find_school_by_subj(subject_area)
+                if section_id == "VSUR601001":
+                    print(school_code)
                 school = School.objects.get(opendata_abbr=school_code)
+                if section_id == "VSUR601001":
+                    print(school)
                 subject = Subject.objects.create(
                     abbreviation=subject_area, name=subject_area, schools=school
                 )
@@ -225,7 +234,10 @@ def pull_courses(term):
                     f"couldnt find subject {subject_area}: {error}"
                 )
                 subject = ""
-                print(f"{course_code}: Subject not found")
+                print(
+                    f"{course_code}: Subject {subject_area} not found (found"
+                    f" {school_code} in Open Data.)"
+                )
 
         if xc:
             if xc == "S":

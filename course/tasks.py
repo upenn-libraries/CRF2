@@ -4,13 +4,13 @@ import sys
 import time
 from datetime import datetime
 
-from canvas import api as canvas_api
-from datawarehouse import datawarehouse
-
 from celery import task
+
+from canvas import api as canvas_api
 from course import utils
 from course.models import *
 from course.serializers import RequestSerializer
+from datawarehouse import datawarehouse
 
 
 @task()
