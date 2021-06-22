@@ -1,8 +1,10 @@
 from __future__ import print_function
 
+import platform
 from configparser import ConfigParser
 from datetime import datetime
 from logging import getLogger
+from pathlib import Path
 from re import findall
 from string import capwords
 
@@ -10,6 +12,14 @@ import cx_Oracle
 from course import utils
 from course.models import Activity, Course, Profile, School, Subject, User
 from OpenData.library import OpenData
+
+if platform.system() == "Darwin":
+    lib_dir = Path.home() / "Downloads/instantclient_19_8"
+    config_dir = lib_dir / "network/admin"
+    cx_Oracle.init_oracle_client(
+        lib_dir=str(lib_dir),
+        config_dir=str(config_dir),
+    )
 
 
 def get_cursor():
