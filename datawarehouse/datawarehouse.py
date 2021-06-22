@@ -208,11 +208,7 @@ def pull_courses(term):
     ) in cursor:
 
         course_code = course_code.replace(" ", "")
-        if section_id == "VSUR601001":
-            print(subject_area)
         subject_area = subject_area.replace(" ", "")
-        if section_id == "VSUR601001":
-            print(subject_area)
         xc_code = xc_code.replace(" ", "")
         primary_crosslist = ""
 
@@ -221,11 +217,7 @@ def pull_courses(term):
         except Exception:
             try:
                 school_code = open_data.find_school_by_subj(subject_area)
-                if section_id == "VSUR601001":
-                    print(school_code)
                 school = School.objects.get(opendata_abbr=school_code)
-                if section_id == "VSUR601001":
-                    print(school)
                 subject = Subject.objects.create(
                     abbreviation=subject_area, name=subject_area, schools=school
                 )
