@@ -104,7 +104,7 @@ school_data = [
         "abbreviation": "VET",
         "name": "Veterinary Medicine",
         "visibility": True,
-        "opendata_abbr": "VT",
+        "opendata_abbr": "VM",
         "canvas_subaccount": 132153,
     },
     {
@@ -133,7 +133,7 @@ class Command(BaseCommand):
         print(") Adding schools...")
 
         for index, school in enumerate(school_data):
-            message = f"- ({index}/{len(school_data)})"
+            message = f"- ({index + 1}/{len(school_data)})"
 
             if not (
                 School.objects.filter(abbreviation=school["abbreviation"]).exists()
@@ -155,6 +155,8 @@ class Command(BaseCommand):
                     )
                 print(f"{message} Added {school['name']}.")
             else:
-                print(f"{message} School already exists: {school['name']}.")
+                print(
+                    f"{message} School already exists: {school['name']} ({school['abbreviation']})."
+                )
 
         print("FINISHED")

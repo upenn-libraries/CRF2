@@ -242,8 +242,9 @@ class Command(BaseCommand):
             key = config.get("opendata", "key")
             open_data_connection = OpenData(base_url=domain, id=open_data_id, key=key)
             subjects = open_data_connection.get_available_subj()
+
             if type(subjects) != dict:
-                print(subjects)
+                print(f"- ERROR: {subjects}")
             else:
                 subjects_total = len(subjects)
 
@@ -287,11 +288,13 @@ class Command(BaseCommand):
 
                     if fails > 0 or len(missing_schools) > 0:
                         print("SUMMARY")
+
                         if fails > 0:
                             print(
                                 f"- Failed to find {fails} out of {subjects_total} total"
                                 " subjects."
                             )
+
                         if len(missing_schools) > 0:
                             missing_schools = list(set(missing_schools))
                             print("- Missing schools:")
@@ -299,9 +302,7 @@ class Command(BaseCommand):
                                 print(f"\t{school}")
 
                 except Exception as error:
-                    print(error)
-                    if subjects_total == 0:
-                        print(subjects)
+                    print(f"- ERROR: {error}")
 
             print("FINISHED")
         else:
