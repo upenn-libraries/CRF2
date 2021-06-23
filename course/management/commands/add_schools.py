@@ -1,8 +1,7 @@
 from configparser import ConfigParser
 
-from django.core.management.base import BaseCommand
-
 from course.models import School
+from django.core.management.base import BaseCommand
 
 config = ConfigParser()
 config.read("config/config.ini")
@@ -119,24 +118,9 @@ school_data = [
 
 
 class Command(BaseCommand):
-    help = "add schools (see file for data)"
-
-    def add_arguments(self, parser):
-        pass
-        # parser.add_argument('-p', '--prefix', type=str, help='Define a
-        # username prefix')
-        # parser.add_argument('-a', '--admin', action='store_true', help='Create
-        # an admin account')
-        parser.add_argument(
-            "-q",
-            "--quick",
-            action="store_true",
-            help="Quick add local store of schools",
-        )
+    help = "Add schools (see file for data)"
 
     def handle(self, *args, **kwargs):
-        # courseware = kwargs['courseware']
-
         """
         FROM MODELS
         name = models.CharField(max_length=50,unique=True)
@@ -145,12 +129,12 @@ class Command(BaseCommand):
         opendata_abbr = models.CharField(max_length=2)
         canvas_subaccount = models.IntegerField(null=True)
         """
+
         for school in school_data:
             if not (
                 School.objects.filter(abbreviation=school["abbreviation"]).exists()
             ):
                 if school.get("canvas_subaccount"):
-                    print(school)
                     School.objects.create(
                         name=school["name"],
                         abbreviation=school["abbreviation"],
@@ -166,4 +150,4 @@ class Command(BaseCommand):
                         opendata_abbr=school["opendata_abbr"],
                     )
             else:
-                print("SCHool already exists: " + school["name"])
+                print(f"School already exists: {school['name']}")
