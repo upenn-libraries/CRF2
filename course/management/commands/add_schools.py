@@ -130,7 +130,10 @@ class Command(BaseCommand):
         canvas_subaccount = models.IntegerField(null=True)
         """
 
-        for school in school_data:
+        print(") Adding schools...")
+
+        for index, school in enumerate(school_data):
+            message = f"- ({index}/{len(school_data)})"
             if not (
                 School.objects.filter(abbreviation=school["abbreviation"]).exists()
             ):
@@ -149,5 +152,8 @@ class Command(BaseCommand):
                         visible=school["visibility"],
                         opendata_abbr=school["opendata_abbr"],
                     )
+                print(f"{message} Adding {school['name']}")
             else:
-                print(f"School already exists: {school['name']}")
+                print(f"{message} School already exists: {school['name']}")
+
+        print("FINISHED")

@@ -86,17 +86,17 @@ class School(models.Model):
         """
         some text
         """
-        print("saving school instance")
+        # print("saving school instance")
         # print(self.subjects)
         # print(self.get_subjects())
-        print("args,kwargs", args, kwargs)
+        # print("args,kwargs", args, kwargs)
         subjects = Subject.objects.filter(schools=self.abbreviation)
-        print("subjects", subjects)
+        # print("subjects", subjects)
 
         for subject in subjects:
             subject.visible = self.visible
             subject.save()
-        print("self.pk", self.pk)
+        # print("self.pk", self.pk)
         super().save(*args, **kwargs)  # super(Course, self)
 
     def __str__(self):
