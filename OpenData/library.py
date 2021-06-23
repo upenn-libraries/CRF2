@@ -158,12 +158,13 @@ class OpenData(object):
         url = self.base_url + "course_section_search_parameters/"
         response = requests.get(url, headers=self.headers).json()
         try:
-            result = response["error_text"]
-        except Exception:
-            try:
-                result = response["result_data"][0]["departments_map"]
-            except Exception as error:
-                result = error
+            result = (
+                response["service_meta"]["error_text"]
+                if response["service_meta"]["error_text"]
+                else response["result_data"][0]["departments_map"]
+            )
+        except Exception as error:
+            result = error
 
         return result
 

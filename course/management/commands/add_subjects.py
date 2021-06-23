@@ -242,56 +242,68 @@ class Command(BaseCommand):
             key = config.get("opendata", "key")
             open_data_connection = OpenData(base_url=domain, id=open_data_id, key=key)
             subjects = open_data_connection.get_available_subj()
-            subjects_total = len(subjects) if type(subjects) == dict else 0
-
-            try:
-                for index, value in enumerate(subjects.items()):
-                    abbreviation, subject_name = value
-                    message = f"- ({index + 1}/{subjects_total})"
-
-                    if not Subject.objects.filter(abbreviation=abbreviation).exists():
-                        try:
-                            school_code = open_data_connection.find_school_by_subj(
-                                abbreviation
-                            )
-                            school_name = School.objects.get(opendata_abbr=school_code)
-                            Subject.objects.update_or_create(
-                                abbreviation=abbreviation,
-                                defaults={
-                                    "name": subject_name,
-                                    "visible": True,
-                                    "schools": school_name,
-                                },
-                            )
-                            print(f"{message} Added {subject_name} ({abbreviation}).")
-                        except Exception as error:
-                            school_code = open_data_connection.find_school_by_subj(
-                                abbreviation
-                            )
-                            missing_schools.append(school_code)
-                            message = f"{message} ERROR: Failed to add {abbreviation} ({error})"
-                            logging.getLogger("error_logger").error(message)
-                            print(message)
-                            fails += 1
-                    else:
-                        print(f"{message} Subject {subject_name} already exists.")
-
-                if fails > 0 or len(missing_schools) > 0:
-                    print("SUMMARY")
-                    if fails > 0:
-                        print(
-                            f"- Failed to find {fails} out of {subjects_total} total"
-                            " subjects."
-                        )
-                    if len(missing_schools) > 0:
-                        missing_schools = list(set(missing_schools))
-                        print("- Missing schools:")
-                        for school in missing_schools:
-                            print(f"\t{school}")
-
-                print("FINISHED")
-            except Exception:
+            if type(subjects) != dict:
                 print(subjects)
+            else:
+                subjects_total = len(subjects)
+
+                try:
+                    for index, value in enumerate(subjects.items()):
+                        abbreviation, subject_name = value
+                        message = f"- ({index + 1}/{subjects_total})"
+
+                        if not Subject.objects.filter(
+                            abbreviation=abbreviation
+                        ).exists():
+                            try:
+                                school_code = open_data_connection.find_school_by_subj(
+                                    abbreviation
+                                )
+                                school_name = School.objects.get(
+                                    opendata_abbr=school_code
+                                )
+                                Subject.objects.update_or_create(
+                                    abbreviation=abbreviation,
+                                    defaults={
+                                        "name": subject_name,
+                                        "visible": True,
+                                        "schools": school_name,
+                                    },
+                                )
+                                print(
+                                    f"{message} Added {subject_name} ({abbreviation})."
+                                )
+                            except Exception as error:
+                                school_code = open_data_connection.find_school_by_subj(
+                                    abbreviation
+                                )
+                                missing_schools.append(school_code)
+                                message = f"{message} ERROR: Failed to add {abbreviation} ({error})"
+                                logging.getLogger("error_logger").error(message)
+                                print(message)
+                                fails += 1
+                        else:
+                            print(f"{message} Subject {subject_name} already exists.")
+
+                    if fails > 0 or len(missing_schools) > 0:
+                        print("SUMMARY")
+                        if fails > 0:
+                            print(
+                                f"- Failed to find {fails} out of {subjects_total} total"
+                                " subjects."
+                            )
+                        if len(missing_schools) > 0:
+                            missing_schools = list(set(missing_schools))
+                            print("- Missing schools:")
+                            for school in missing_schools:
+                                print(f"\t{school}")
+
+                except Exception as error:
+                    print(error)
+                    if subjects_total == 0:
+                        print(subjects)
+
+            print("FINISHED")
         else:
             with open("OpenData/OpenData.json") as json_file:
                 subjects = json.load(json_file)
