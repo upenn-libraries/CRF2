@@ -230,6 +230,8 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **kwargs):
+        print(") Adding subjects...")
+
         open_data = kwargs["opendata"]
 
         if open_data:
@@ -240,33 +242,57 @@ class Command(BaseCommand):
             open_data_connection = OpenData(base_url=domain, id=open_data_id, key=key)
             subjects = open_data_connection.get_available_subj()
             subjects_total = len(subjects)
-            for abbreviation, subject_name in subjects.items():
-                try:
-                    subject = Subject.objects.get(abbreviation=abbreviation)
-                except Exception:
-                    school_code = open_data_connection.find_school_by_subj(abbreviation)
-                    try:
-                        school_name = School.objects.get(opendata_abbr=school_code)
-                        subject = Subject.objects.create(
-                            abbreviation=abbreviation,
-                            name=subject_name,
-                            visible=True,
-                            schools=school_name,
+            schools_not_found = list()
+            subjects_not_found = list()
+
+            try:
+                for index, value in enumerate(subjects.items()):
+                    abbreviation, subject_name = value
+                    message = f"- ({index}/{subjects_total})"
+
+                    if not Subject.objects.filter(abbreviation=abbreviation).exists():
+                        try:
+                            school_code = open_data_connection.find_school_by_subj(
+                                abbreviation
+                            )
+                            school_name = School.objects.get(opendata_abbr=school_code)
+                            subject = Subject.objects.create(
+                                abbreviation=abbreviation,
+                                name=subject_name,
+                                visible=True,
+                                schools=school_name,
+                            )
+                            print(f"{message} Added {subject_name} ({abbreviation}).")
+                        except Exception:
+                            schools_not_found.append(school_code)
+                            message = (
+                                f"{message} ERROR: Failed to add {subject_name} ({abbreviation}) [school code not"
+                                f" found: {school_code}]."
+                            )
+                            logging.getLogger("error_logger").error(message)
+                            print(message)
+                            fails += 1
+                    else:
+                        print(f"{message} Subject {subject_name} already exists.")
+
+                if fails > 0 or len(schools_not_found) > 0:
+                    print("SUMMARY")
+                    if fails > 0:
+                        print(
+                            f"- Failed to find {fails} out of {subjects_total} total subjects."
                         )
-                    except Exception:
-                        message = (
-                            f"Failed to add subject {abbreviation} (school code not"
-                            f" found: {school_code})."
-                        )
-                        logging.getLogger("error_logger").error(message)
-                        print(message)
-                        fails += 1
-            if fails > 0:
-                print(f"Failed to find {fails} out of {subjects_total} total subjects.")
-            print("FINISHED")
+                    if len(schools_not_found) > 0:
+                        print("- Schools not found:")
+                        for school in schools_not_found:
+                            print(f"\t{school}")
+
+                print("FINISHED")
+            except Exception:
+                print(subjects)
         else:
             with open("OpenData/OpenData.json") as json_file:
                 subjects = json.load(json_file)
+
                 for school_name, subjects_list in subjects["school_subj_map"].items():
                     try:
                         school = School.objects.get(opendata_abbr=school_name)
@@ -275,7 +301,9 @@ class Command(BaseCommand):
                             f"Failed to find {school_name}"
                         )
 
-                    for subject in subjects_list:
+                    for index, subject in enumerate(subjects_list):
+                        message = f"- ({index}/{len(subjects_total)})"
+
                         if not Subject.objects.filter(abbreviation=subject).exists():
                             try:
                                 subject_name = subjects["departments"][subject]
@@ -285,19 +313,25 @@ class Command(BaseCommand):
                                     visible=True,
                                     schools=school,
                                 )
-                            except Exception:
-                                message = (
-                                    f"Failed to find subject {subject} in departments."
+                                print(
+                                    f"{message} Added {subject_name} ({abbreviation})."
                                 )
+                            except Exception:
+                                schools_not_found.append(school_code)
+                                message = f"{message} ERROR: Failed to find subject name for {subject} in departments."
                                 logging.getLogger("error_logger").error(message)
                                 print(message)
+
                                 Subject.objects.create(
                                     name=subject + "-- FIX ME",
                                     abbreviation=subject,
                                     visible=True,
                                     schools=school,
                                 )
+                                print(
+                                    f"{message} Added {subject} marked with 'FIX ME'."
+                                )
                         else:
-                            print(f"Subject {subject} already exists.")
+                            print(f"{message} Subject {subject} already exists.")
 
             print("FINISHED")

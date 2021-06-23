@@ -134,6 +134,7 @@ class Command(BaseCommand):
 
         for index, school in enumerate(school_data):
             message = f"- ({index}/{len(school_data)})"
+
             if not (
                 School.objects.filter(abbreviation=school["abbreviation"]).exists()
             ):
@@ -152,8 +153,8 @@ class Command(BaseCommand):
                         visible=school["visibility"],
                         opendata_abbr=school["opendata_abbr"],
                     )
-                print(f"{message} Adding {school['name']}")
+                print(f"{message} Added {school['name']}.")
             else:
-                print(f"{message} School already exists: {school['name']}")
+                print(f"{message} School already exists: {school['name']}.")
 
         print("FINISHED")
