@@ -158,9 +158,14 @@ class OpenData(object):
         url = self.base_url + "course_section_search_parameters/"
         response = requests.get(url, headers=self.headers).json()
         try:
-            return response["error_text"]
+            result = response["error_text"]
         except Exception:
-            return response["result_data"][0]["departments_map"]
+            try:
+                result = response["result_data"][0]["departments_map"]
+            except Exception as error:
+                result = error
+
+        return result
 
 
 # id_directory = config.get('opendata', 'id_directory')

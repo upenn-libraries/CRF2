@@ -52,7 +52,7 @@ class Command(BaseCommand):
             "-t", "--term", type=str, help="Define a term ( e.g. 2019A )"
         )
         parser.add_argument(
-            "-d", "--opendata", action="store_true", help="pull from OpenData API"
+            "-o", "--opendata", action="store_true", help="pull from OpenData API"
         )
         parser.add_argument(
             "-l", "--localstore", action="store_true", help="pull from Local Store"
@@ -265,7 +265,7 @@ class Command(BaseCommand):
         #        print(data)
 
         else:
-            with open("OpenData/OpenData.txt") as json_file:
+            with open("OpenData/OpenData.json") as json_file:
                 data = json.load(json_file)
                 # print(data.keys()) =dict_keys(['activity_map', 'departments',
                 # 'programs', 'school_subj_map'])
