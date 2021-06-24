@@ -139,34 +139,36 @@ def check_for_account(pennkey):
 def create_canvas_site(test=False):
     """
     1. set request to in process
-    2. Create course in canvas ( check that is doesnt exist first )
+    2. Create course in canvas (check that is doesnt exist first)
     2a. Crosslist
     2b. add sections
-    3. enroll faculty and additional enrollments ( check that they have accounts first)
+    3. enroll faculty and additional enrollments (check that they have accounts first)
     4. Configure reserves
     5. Content Migration
-    6. Create CanvasSite Object and link to Request ( set canvas_instance_id )
+    6. Create CanvasSite Object and link to Request (set canvas_instance_id)
     7. Set request to Complete
     8. Notify with email (not completed)
     """
-    _to_process = Request.objects.filter(status="APPROVED")
 
-    for request_obj in _to_process:
-        serialized = RequestSerializer(request_obj)
+    requested_courses = Request.objects.filter(status="APPROVED")
+
+    for request in requested_courses:
+        serialized = RequestSerializer(request)
         additional_sections = []
 
         # Step 1. Set request to IN_PROCESS
 
-        request_obj.status = "IN_PROCESS"
-        request_obj.save()
+        request.status = "IN_PROCESS"
+        request.save()
 
-        course_requested = request_obj.course_requested
+        course_requested = request.course_requested
+
         print(f"COURSE REQUESTED: {course_requested}")
 
         # Step 2. Create course in canvas
 
         account = canvas_api.find_account(
-            course_requested.course_schools.canvas_subaccount
+            course_requested.course_schools.canvas_subaccount, test=test
         )
 
         if account:
@@ -182,8 +184,8 @@ def create_canvas_site(test=False):
                     subj = pc[:-5][:-6]
                     section_name_code = f"{subj} {number}-{section} {term}"
                 else:
-                    request_obj.process_notes += "primary_crosslist not set,"
-                    request_obj.save()
+                    request.process_notes += "primary_crosslist not set,"
+                    request.save()
                     return
             else:
                 section_name_code = (
@@ -195,16 +197,18 @@ def create_canvas_site(test=False):
 
             name_code = section_name_code
 
-            if request_obj.title_override:
-                name = f"{name_code} {request_obj.title_override[:45]}"
-                section_name = f"{section_name_code}{request_obj.title_override[:45]}"
+            if request.title_override:
+                name = f"{name_code} {request.title_override[:45]}"
+                section_name = f"{section_name_code}{request.title_override[:45]}"
             else:
                 name = f"{name_code} {course_requested.course_name}"
                 section_name = f"{section_name_code} {course_requested.course_name}"
 
             sis_course_id = f"SRS_{course_requested.srs_format_primary()}"
             term_id = canvas_api.find_term_id(
-                96678, f"{course_requested.year}{course_requested.course_term}"
+                96678,
+                f"{course_requested.year}{course_requested.course_term}",
+                test=test,
             )
             course = {
                 "name": name,
@@ -216,17 +220,17 @@ def create_canvas_site(test=False):
             try:
                 canvas_course = account.create_course(course=course)
             except Exception:
-                request_obj.process_notes += (
+                request.process_notes += (
                     "course site creation failed--check if it already exists,"
                 )
-                request_obj.save()
+                request.save()
                 return
 
             try:
                 canvas_course.update(course={"storage_quota_mb": 2000})
             except:
-                request_obj.process_notes += "course site quota not raised,"
-                request_obj.save()
+                request.process_notes += "course site quota not raised,"
+                request.save()
 
             try:
                 additional_section = {"course_section": "", "instructors": ""}
@@ -243,16 +247,16 @@ def create_canvas_site(test=False):
                 additional_section["instructors"] = course_requested.instructors.all()
                 additional_sections += [additional_section]
             except Exception:
-                request_obj.process_notes += "failed to create main section,"
-                request_obj.process_notes += sys.exc_info()[0]
-                request_obj.save()
+                request.process_notes += "failed to create main section,"
+                request.process_notes += sys.exc_info()[0]
+                request.save()
                 return
         else:
-            request_obj.process_notes += "failed to locate Canvas Account in Canvas,"
+            request.process_notes += "failed to locate Canvas Account in Canvas,"
             return
 
-        if request_obj.title_override:
-            namebit = request_obj.title_override
+        if request.title_override:
+            namebit = request.title_override
         else:
             namebit = course_requested.course_name
 
@@ -280,8 +284,8 @@ def create_canvas_site(test=False):
                 additional_section["instructors"] = section_course.instructors.all()
                 additional_sections += [additional_section]
             except Exception:
-                request_obj.process_notes += "failed to create section,"
-                request_obj.save()
+                request.process_notes += "failed to create section,"
+                request.save()
                 return
 
         # Step 3. enroll faculty and additional enrollments
@@ -300,7 +304,7 @@ def create_canvas_site(test=False):
 
         for section in additional_sections:
             for instructor in section["instructors"]:
-                user = canvas_api.get_user_by_sis(instructor.username)
+                user = canvas_api.get_user_by_sis(instructor.username, test=test)
 
                 if user is None:
                     try:
@@ -309,12 +313,13 @@ def create_canvas_site(test=False):
                             instructor.profile.penn_id,
                             instructor.email,
                             f"{instructor.first_name} {instructor.last_name}",
+                            test=test,
                         )
-                        request_obj.process_notes += (
+                        request.process_notes += (
                             f"created account for user: {instructor.username},"
                         )
                     except Exception:
-                        request_obj.process_notes += (
+                        request.process_notes += (
                             f"failed to create account for user: {instructor.username},"
                         )
 
@@ -328,7 +333,7 @@ def create_canvas_site(test=False):
                         },
                     )
                 except Exception:
-                    request_obj.process_notes += (
+                    request.process_notes += (
                         f"failed to add user: {instructor.username},"
                     )
         additional_enrollments = serialized.data["additional_enrollments"]
@@ -346,11 +351,11 @@ def create_canvas_site(test=False):
                         user_crf.email,
                         user_crf.first_name + user_crf.last_name,
                     )
-                    request_obj.process_notes += (
+                    request.process_notes += (
                         f"created account for user: {instructor.username},"
                     )
                 except Exception:
-                    request_obj.process_notes += (
+                    request.process_notes += (
                         f"failed to create account for user: {instructor.username},"
                     )
 
@@ -366,7 +371,7 @@ def create_canvas_site(test=False):
                         },
                     )
                 except Exception:
-                    request_obj.process_notes += f"failed to add user: {user},"
+                    request.process_notes += f"failed to add user: {user},"
             else:
                 try:
                     canvas_course.enroll_user(
@@ -378,7 +383,7 @@ def create_canvas_site(test=False):
                         },
                     )
                 except Exception:
-                    request_obj.process_notes += f"failed to add user: {user},"
+                    request.process_notes += f"failed to add user: {user},"
 
         # Step 4. Configure reserves/libguide
 
@@ -394,9 +399,9 @@ def create_canvas_site(test=False):
                 tab.update(hidden=False)
 
                 if tab.visibility != "public":
-                    request_obj.process_notes += "failed to configure ARES,"
+                    request.process_notes += "failed to configure ARES,"
             except:
-                request_obj.process_notes += "failed to try to configure ARES,"
+                request.process_notes += "failed to try to configure ARES,"
 
         # Step 5. Content Migration
 
@@ -429,7 +434,7 @@ def create_canvas_site(test=False):
 
         instructors = canvas_course.get_enrollments(type="TeacherEnrollment")._elements
         _canvas_id = canvas_course.id
-        _request_instance = request_obj
+        _request_instance = request
         _name = canvas_course.name
         _sis_course_id = canvas_course.sis_course_id
         _workflow_state = canvas_course.workflow_state
@@ -441,7 +446,7 @@ def create_canvas_site(test=False):
             workflow_state=_workflow_state,
         )
 
-        request_obj.canvas_instance = site
+        request.canvas_instance = site
 
         for instructor in instructors:
             try:
@@ -452,5 +457,5 @@ def create_canvas_site(test=False):
 
         # Step 7. Set request to Complete
 
-        request_obj.status = "COMPLETED"
-        request_obj.save()
+        request.status = "COMPLETED"
+        request.save()

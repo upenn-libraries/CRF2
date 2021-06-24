@@ -15,32 +15,31 @@ def gen_header(test):
     return {"Authorization": f"Bearer {TOKEN_TEST if test else TOKEN_PROD}"}
 
 
+def get_canvas(test):
+    return Canvas(
+        URL_PROD if not test else URL_TEST, TOKEN_PROD if not test else TOKEN_TEST
+    )
+
+
 # --------------- RETREIVEING FROM CANVAS ------------------
 
 
-def get_user_by_sis(login_id):
-    # login_id == pennkey
-    # https://canvas.instructure.com/doc/api/users.html
-    # Initialize a new Canvas object
-    canvas = Canvas(URL_PROD, TOKEN_PROD)
-    # canvas.get_user(123)
+def get_user_by_sis(login_id, test=False):
+    canvas = get_canvas(test)
+
     try:
         login_id_user = canvas.get_user(login_id, "sis_login_id")
-        # print(login_id_user, login_id_user.attributes)
-        # print(login_id_user.get_courses()[0].attributes)
         return login_id_user
-    except CanvasException as e:
-        print("CanvasException: ", e)
+    except CanvasException as error:
+        print("CanvasException: ", error)
         return None
 
 
-# need to test this
-def mycreate_user(pennkey, pennid, email, fullname):
-    # 1. create account with SIS_ID speciified
-    # canvas = Canvas(URL_PROD, TOKEN_PROD)
+def mycreate_user(pennkey, pennid, email, fullname, test=False):
     pseudonym = {"sis_user_id": pennid, "unique_id": pennkey}
+
     try:
-        account = find_account(96678)
+        account = find_account(96678, test=test)
         user = account.create_user(pseudonym, user={"name": fullname})
         user.edit(user={"email": email})
         return user
@@ -77,25 +76,26 @@ def find_in_canvas(sis_section_id):
     return section
 
 
-def find_account(account_id):
-    canvas = Canvas(URL_PROD, TOKEN_PROD)
+def find_account(account_id, test=False):
+    canvas = get_canvas(test)
+
     try:
         account = canvas.get_account(account_id)
         return account
-    except CanvasException as e:
-        print("CanvasException: ", e)
+    except CanvasException as error:
+        print("CanvasException: ", error)
         return None
 
 
-def find_term_id(account_id, sis_term_id):
-    # term= 2019C
-    # https://canvas.upenn.edu/api/v1/accounts/96678/terms/sis_term_id:2019C -- works
-    canvas = Canvas(URL_PROD, TOKEN_PROD)
+def find_term_id(account_id, sis_term_id, test=False):
+    canvas = get_canvas(test)
     account = canvas.get_account(account_id)
+
     if account:
         response = account._requester.request(
-            "GET", "accounts/{}/terms/sis_term_id:{}".format(account_id, sis_term_id)
+            "GET", f"accounts/{account_id}/terms/sis_term_id:{sis_term_id}"
         )
+
         if response.status_code == 200:
             return response.json()["id"]
         else:
