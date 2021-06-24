@@ -279,7 +279,10 @@ class Command(BaseCommand):
                                     abbreviation
                                 )
                                 missing_schools.append(school_code)
-                                message = f"{message} ERROR: Failed to add {abbreviation} ({error})"
+                                message = (
+                                    f"{message} ERROR: Failed to add {abbreviation}"
+                                    f" ({error})"
+                                )
                                 logging.getLogger("error_logger").error(message)
                                 print(message)
                                 fails += 1
@@ -291,8 +294,8 @@ class Command(BaseCommand):
 
                         if fails > 0:
                             print(
-                                f"- Failed to find {fails} out of {subjects_total} total"
-                                " subjects."
+                                f"- Failed to find {fails} out of {subjects_total}"
+                                " total subjects."
                             )
 
                         if len(missing_schools) > 0:

@@ -28,14 +28,14 @@ class OpenData(object):
         self.params = {
             "number_of_results_per_page": 30,
             "page_number": 1,
-        }  # set this as a default
+        }
 
     def clear_settings(self):
         self.uri = ""
         self.params = {
             "number_of_results_per_page": 30,
             "page_number": 1,
-        }  # set this as a default
+        }
 
     def set_uri(self, new_uri):
         # should check that url+uri is valid
@@ -44,7 +44,7 @@ class OpenData(object):
     def add_param(self, key, value):
         # I dont think I will want to check this -- caveat emptor
         self.params[key] = value
-        print(self.params)
+        # print(self.params)
 
     def next_page(self):
         # https://esb.isc-seo.upenn.edu/8091/open_data/course_info/ACCT/?page_number=2&number_of_results_per_page=20
@@ -53,12 +53,6 @@ class OpenData(object):
 
         result_data, service_meta = self.call_api(only_data=False)
 
-        print(
-            "testing",
-            service_meta["current_page_number"],
-            service_meta["number_of_pages"],
-            current,
-        )
         if service_meta["current_page_number"] == current + 1:
 
             # that means we were able to get the next page because it does exist !
@@ -77,7 +71,7 @@ class OpenData(object):
         url = self.base_url + self.uri
         response = requests.get(url, headers=self.headers, params=self.params)
         # print("url",url)
-        print(response.status_code)
+        # print(response.status_code)
         r = response.json()
         # print("r",r)
         service_meta = r["service_meta"]

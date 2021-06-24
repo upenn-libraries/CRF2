@@ -1,7 +1,8 @@
 from configparser import ConfigParser
 
-from course.models import School
 from django.core.management.base import BaseCommand
+
+from course.models import School
 
 config = ConfigParser()
 config.read("config/config.ini")
@@ -156,7 +157,8 @@ class Command(BaseCommand):
                 print(f"{message} Added {school['name']}.")
             else:
                 print(
-                    f"{message} School already exists: {school['name']} ({school['abbreviation']})."
+                    f"{message} School already exists: {school['name']}"
+                    f" ({school['abbreviation']})."
                 )
 
         print("FINISHED")

@@ -331,6 +331,7 @@ def create_instructors(term):
         """,
         term=term,
     )
+
     for first_name, last_name, pennkey, penn_id, email in cursor:
         try:
             first_name = first_name.title()
