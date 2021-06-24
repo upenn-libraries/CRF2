@@ -4,18 +4,16 @@ import sys
 import time
 from datetime import datetime
 
+import canvas.api as canvas_api
 import requests
-from canvas import TOKEN_PROD, TOKEN_TEST, URL_PROD, URL_TEST
 from canvas import api as canvas_api
+from canvas.api import TOKEN_PROD, TOKEN_TEST, URL_PROD, URL_TEST
 from datawarehouse import datawarehouse
 
 from celery import task
-
-from canvas import api as canvas_api
 from course import utils
 from course.models import CanvasSite, Course, Request, User
 from course.serializers import RequestSerializer
-from datawarehouse import datawarehouse
 
 
 @task()
@@ -150,7 +148,14 @@ def create_canvas_site(test=False):
     8. Notify with email (not completed)
     """
 
+    print(") Creating Canvas sites for requested courses...")
+
     requested_courses = Request.objects.filter(status="APPROVED")
+
+    if not requested_courses:
+        print("- No requests found.")
+        print("FINISHED")
+        return
 
     for request in requested_courses:
         serialized = RequestSerializer(request)
@@ -407,28 +412,34 @@ def create_canvas_site(test=False):
 
         print("MIGRATION STEP")
 
-        if serialized.data["copy_from_course"]:
-            print(f"COPY FROM COURSE: {serialized.data['copy_from_course']}")
-            content_migration = canvas_course.create_content_migration(
-                migration_type="course_copy_importer",
-                settings={"[source_course_id": serialized.data["copy_from_course"]},
-            )
+        try:
+            if serialized.data["copy_from_course"]:
+                print(f"COPY FROM COURSE: {serialized.data['copy_from_course']}")
+                content_migration = canvas_course.create_content_migration(
+                    migration_type="course_copy_importer",
+                    settings={"source_course_id": serialized.data["copy_from_course"]},
+                    selective_import=True,
+                )
 
-            response = requests.get(
-                f"{URL_TEST if test else URL_PROD}/api/v1/courses/{canvas_course.id}/content_migrations/{content_migration.id}/selective_data",
-                params={"type": "calendar_events"},
-            )
+                response = requests.get(
+                    f"{URL_TEST if test else URL_PROD}/api/v1/courses/{canvas_course.id}/content_migrations/{content_migration.id}/selective_data",
+                    params={"type": "calendar_events"},
+                )
 
-            print(response)
+                print(response)
 
-            while (
-                content_migration.get_progress == "queued"
-                or content_migration.get_progress == "running"
-            ):
-                print("MIGRATION RUNNING...")
-                time.sleep(8)
+                content_migration.update(copy={"all_course_settings": 1})
 
-            print("MIGRATION COMPLETE")
+                while (
+                    content_migration.get_progress == "queued"
+                    or content_migration.get_progress == "running"
+                ):
+                    print("MIGRATION RUNNING...")
+                    time.sleep(8)
+
+                print("MIGRATION COMPLETE")
+        except Exception as error:
+            print(error)
 
         # Step 6. Create CanvasSite Object and link to Request
 
@@ -459,3 +470,5 @@ def create_canvas_site(test=False):
 
         request.status = "COMPLETED"
         request.save()
+
+    print("FINISHED")

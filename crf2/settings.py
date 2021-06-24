@@ -30,7 +30,7 @@ print("basedir", BASE_DIR)
 SECRET_KEY = config.get("django", "secret_key", raw=True)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 CANVAS_ENVIRONMENT = "PRODUCTION"  # Could be 'BETA', or 'PRODUCTION'
 #
