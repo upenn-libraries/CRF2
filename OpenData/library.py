@@ -54,60 +54,36 @@ class OpenData(object):
         result_data, service_meta = self.call_api(only_data=False)
 
         if service_meta["current_page_number"] == current + 1:
-
-            # that means we were able to get the next page because it does exist !
             return result_data
         else:
-            # no next_page
             return None
 
-    # this needs to be tested and resolved!!!!
     def call_api(self, only_data=True):
-        # if data = True then we are returning the contents otherwise we r returning the service_meta and result_data
-        # probably something more should be happening here.
-        # since the response is {'result_data': [<content we want],'service_meta':{...}}
-        # lets just strip that accordingly
-
         url = self.base_url + self.uri
         response = requests.get(url, headers=self.headers, params=self.params)
-        # print("url",url)
-        # print(response.status_code)
-        r = response.json()
-        # print("r",r)
-        service_meta = r["service_meta"]
-        if "error_text" in service_meta:
-            if service_meta["error_text"] != "":
-                print("error1")
-                # return(service_meta['error_text'])
-                return "ERROR"
-            # return service_meta['error_text'].split('\n')[0]
-        # if we are asking for a page out of bounds
-        if service_meta["current_page_number"] < self.params["page_number"]:
-            print("error2")
-            # return(service_meta['error_text'])
+        response_json = response.json()
+        service_meta = response_json["service_meta"]
+
+        if "error_text" in service_meta and service_meta["error_text"]:
+            print("error1")
             return "ERROR"
-            # return service_meta['error_text'].split('/\n')[0]
-        # elif
+        elif service_meta["current_page_number"] < self.params["page_number"]:
+            return response_json["result_data"], service_meta
+        elif service_meta["results_per_page"] == len(response_json["result_data"]):
+            result_data = response_json["result_data"]
+        elif isinstance(response_json["result_data"], list):
+            result_data = (
+                response_json["result_data"][0]
+                if response_json["result_data"]
+                else response_json["result_data"]
+            )
         else:
-            # print("1",r['result_data'])
-            if service_meta["results_per_page"] == len(r["result_data"]):
-                result_data = r["result_data"]
-            else:
-                # potentially wrong
-                if isinstance(r["result_data"], list):
-                    # print(r['result_data'])
-                    if r["result_data"] == []:
-                        result_data = []
-                    else:
-                        result_data = r["result_data"][0]
-                else:
-                    result_data = r["result_data"]
-        if only_data == True:
-            # print("2")
+            result_data = response_json["result_data"]
+
+        if only_data:
             return result_data
         else:
-            # print("3")
-            return result_data, r["service_meta"]
+            return result_data, response_json["service_meta"]
 
     def get_available_terms(self):
         # this will make a call to
