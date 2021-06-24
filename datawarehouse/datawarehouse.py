@@ -151,6 +151,8 @@ def inspect_course(section, term=None):
 
 
 def pull_courses(term):
+    print(") Pulling courses...")
+
     open_data = get_open_data()
     cursor = get_cursor()
     cursor.execute(
@@ -277,7 +279,7 @@ def pull_courses(term):
             title = roman_title(title)
             year = term[:4]
 
-            Course.objects.update_or_create(
+            course, created = Course.objects.update_or_create(
                 course_code=course_code,
                 defaults={
                     "owner": User.objects.get(username="benrosen"),
@@ -293,6 +295,11 @@ def pull_courses(term):
                     "year": year,
                 },
             )
+
+            if created:
+                print(f"- Added course {course_code}")
+            else:
+                print(f"- Updated course {course_code}")
 
         except Exception as error:
             print(
@@ -311,7 +318,8 @@ def pull_courses(term):
                 }
             )
             print(type(error), error.__cause__, error)
-    print("DONE LOADING COURSES")
+
+    print("FINISHED")
 
 
 def create_instructors(term):
@@ -348,6 +356,8 @@ def create_instructors(term):
 
 
 def pull_instructors(term):
+    print(") Pulling instructors...")
+
     cursor = get_cursor()
     cursor.execute(
         """
@@ -370,8 +380,10 @@ def pull_instructors(term):
 
     for first_name, last_name, pennkey, penn_id, email, section_id in cursor:
         course_code = (section_id + term).replace(" ", "")
+
         try:
             course = Course.objects.get(course_code=course_code)
+
             if not course.requested:
                 try:
                     instructor = User.objects.get(username=pennkey)
@@ -388,6 +400,7 @@ def pull_instructors(term):
                         Profile.objects.create(user=instructor, penn_id=penn_id)
                     except Exception:
                         instructor = None
+
                 if instructor:
                     try:
                         NEW_INSTRUCTOR_VALUES[course_code].append(instructor)
@@ -395,24 +408,35 @@ def pull_instructors(term):
                         NEW_INSTRUCTOR_VALUES[course_code] = [instructor]
                 else:
                     message = (
-                        f"Couldn't create account for: {first_name} "
+                        f"- ERROR: Failed to create account for: {first_name} "
                         f"{last_name} | {pennkey} | {penn_id} | {email} | {section_id}"
                     )
                     getLogger("error_logger").error(message)
+                    print(message)
         except Exception:
-            message = f"Couldn't find course {course_code}"
+            message = f"- ERROR: Failed to find course {course_code}"
             getLogger("error_logger").error(message)
+            print(message)
 
     for course_code, instructors in NEW_INSTRUCTOR_VALUES.items():
         try:
             course = Course.objects.get(course_code=course_code)
             course.instructors.clear()
+
             for instructor in instructors:
                 course.instructors.add(instructor)
+
             course.save()
-        except Exception:
-            message = "Error adding new instructor(s) to course"
+
+            for instructor in instructors:
+                print(f"- Updated {course_code} with instructor: {instructor}")
+
+        except Exception as error:
+            message = f"- ERROR: Failed to add new instructor(s) to course ({error})"
             getLogger("error_logger").error(message)
+            print(message)
+
+    print("FINISHED")
 
 
 def available_terms():
