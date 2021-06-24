@@ -81,9 +81,25 @@ Project settings are stored in "crf2/settings.py". For development, set `DEBUG =
 
 Commands are run by invoking them through the "manage.py" file. To see all available commands, run `python manage.py`.
 
-To run the application the first time:
+To populate a local database with real data:  
+_For more information, see the files in course/management/commands/_
 
 1. `python manage.py migrate`
+2. `python manage.py createsuperuser` to create your admin username/email/password
+3. `python manage.py add_schools`
+4. `python manage.py add_subjects -o`
+5. `python manage.py add_courses -t <term> -o`
+
+To interactively query the sqlite3 database, run `python manage.py dbshell`.
+
+- To view tables: `.tables`
+- To inspect tables:
+  1. `.headers on` (only required once per session)
+  2. `.mode column`(only required once per session)
+  3. `pragma table_info(<table_name>)`
+
+To run the application:
+
 2. `python manage.py runserver`
 
 To log in as an admin: [http://localhost:8000/admin/](http://localhost:8000/admin/)  
@@ -95,14 +111,6 @@ If you make changes to your "models.py" file, you will need to run:
 
 1. `python manage.py makemigrations`
 2. `python manage.py migrate`
-
-To interactively query the sqlite3 database, run `python manage.py dbshell`.
-
-- To view tables: `.tables`
-- To inspect tables:
-  1. `.headers on` (only required once per session)
-  2. `.mode column`(only required once per session)
-  3. `pragma table_info(<table_name>)`
 
 ### Data Warehouse
 
