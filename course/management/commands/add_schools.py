@@ -136,29 +136,32 @@ class Command(BaseCommand):
         for index, school in enumerate(school_data):
             message = f"- ({index + 1}/{len(school_data)})"
 
-            if not (
-                School.objects.filter(abbreviation=school["abbreviation"]).exists()
-            ):
+            try:
                 if school.get("canvas_subaccount"):
-                    School.objects.create(
+                    course, created = School.objects.update_or_create(
                         name=school["name"],
                         abbreviation=school["abbreviation"],
-                        visible=school["visibility"],
-                        opendata_abbr=school["opendata_abbr"],
-                        canvas_subaccount=school["canvas_subaccount"],
+                        defaults={
+                            "visible": school["visibility"],
+                            "opendata_abbr": school["opendata_abbr"],
+                            "canvas_subaccount": school["canvas_subaccount"],
+                        },
                     )
                 else:
-                    School.objects.create(
+                    course, created = School.objects.update_or_create(
                         name=school["name"],
                         abbreviation=school["abbreviation"],
-                        visible=school["visibility"],
-                        opendata_abbr=school["opendata_abbr"],
+                        defaults={
+                            "visible": school["visibility"],
+                            "opendata_abbr": school["opendata_abbr"],
+                        },
                     )
-                print(f"{message} Added {school['name']}.")
-            else:
-                print(
-                    f"{message} School already exists: {school['name']}"
-                    f" ({school['abbreviation']})."
-                )
+
+                if created:
+                    print(f"{message} Added {school['name']}.")
+                else:
+                    print(f"{message} Updated {school['name']}.")
+            except Exception as error:
+                print(f"{message} - ERROR: {error}")
 
         print("FINISHED")
