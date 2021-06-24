@@ -105,7 +105,7 @@ school_data = [
         "abbreviation": "VET",
         "name": "Veterinary Medicine",
         "visibility": True,
-        "opendata_abbr": "VT",
+        "opendata_abbr": "VM",
         "canvas_subaccount": 132153,
     },
     {
@@ -119,24 +119,9 @@ school_data = [
 
 
 class Command(BaseCommand):
-    help = "add schools (see file for data)"
-
-    def add_arguments(self, parser):
-        pass
-        # parser.add_argument('-p', '--prefix', type=str, help='Define a
-        # username prefix')
-        # parser.add_argument('-a', '--admin', action='store_true', help='Create
-        # an admin account')
-        parser.add_argument(
-            "-q",
-            "--quick",
-            action="store_true",
-            help="Quick add local store of schools",
-        )
+    help = "Add schools (see file for data)"
 
     def handle(self, *args, **kwargs):
-        # courseware = kwargs['courseware']
-
         """
         FROM MODELS
         name = models.CharField(max_length=50,unique=True)
@@ -145,25 +130,38 @@ class Command(BaseCommand):
         opendata_abbr = models.CharField(max_length=2)
         canvas_subaccount = models.IntegerField(null=True)
         """
-        for school in school_data:
-            if not (
-                School.objects.filter(abbreviation=school["abbreviation"]).exists()
-            ):
+
+        print(") Adding schools...")
+
+        for index, school in enumerate(school_data):
+            message = f"- ({index + 1}/{len(school_data)})"
+
+            try:
                 if school.get("canvas_subaccount"):
-                    print(school)
-                    School.objects.create(
+                    course, created = School.objects.update_or_create(
                         name=school["name"],
                         abbreviation=school["abbreviation"],
-                        visible=school["visibility"],
-                        opendata_abbr=school["opendata_abbr"],
-                        canvas_subaccount=school["canvas_subaccount"],
+                        defaults={
+                            "visible": school["visibility"],
+                            "opendata_abbr": school["opendata_abbr"],
+                            "canvas_subaccount": school["canvas_subaccount"],
+                        },
                     )
                 else:
-                    School.objects.create(
+                    course, created = School.objects.update_or_create(
                         name=school["name"],
                         abbreviation=school["abbreviation"],
-                        visible=school["visibility"],
-                        opendata_abbr=school["opendata_abbr"],
+                        defaults={
+                            "visible": school["visibility"],
+                            "opendata_abbr": school["opendata_abbr"],
+                        },
                     )
-            else:
-                print("SCHool already exists: " + school["name"])
+
+                if created:
+                    print(f"{message} Added {school['name']}.")
+                else:
+                    print(f"{message} Updated {school['name']}.")
+            except Exception as error:
+                print(f"{message} - ERROR: {error}")
+
+        print("FINISHED")

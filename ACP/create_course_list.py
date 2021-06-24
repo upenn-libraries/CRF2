@@ -61,7 +61,8 @@ def create_unrequested_list(outputfile="notRequestestedSIS.txt", term="2020A"):
     print("-> Finished Generating: ", outputfile)
     print(
         "-> NEXT: Please now run `create_unused_sis_list(inputfile='%s')` to "
-        "determine which of these course codes are already used in Canvas" % outputfile
+        "determine which of these course codes are already used in Canvas"
+        % outputfile
     )
 
 
@@ -90,5 +91,6 @@ def create_unused_sis_list(
     print("-> Please Check `ACP/logs/canvas.log` for a list of SIS IDs arleady in used")
     print(
         "-> NEXT: To create Requests for these courses please run "
-        "`create_requests(inputfile='%s')`" % outputfile
+        "`create_requests(inputfile='%s')`"
+        % outputfile
     )

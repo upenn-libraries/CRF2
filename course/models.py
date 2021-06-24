@@ -86,17 +86,17 @@ class School(models.Model):
         """
         some text
         """
-        print("saving school instance")
+        # print("saving school instance")
         # print(self.subjects)
         # print(self.get_subjects())
-        print("args,kwargs", args, kwargs)
+        # print("args,kwargs", args, kwargs)
         subjects = Subject.objects.filter(schools=self.abbreviation)
-        print("subjects", subjects)
+        # print("subjects", subjects)
 
         for subject in subjects:
             subject.visible = self.visible
             subject.save()
-        print("self.pk", self.pk)
+        # print("self.pk", self.pk)
         super().save(*args, **kwargs)  # super(Course, self)
 
     def __str__(self):
@@ -114,7 +114,7 @@ class Subject(models.Model):
     requires list_asView but not individual object view
     """
 
-    name = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=50)
     abbreviation = models.CharField(max_length=10, unique=True, primary_key=True)
     visible = models.BooleanField(default=True)
     schools = models.ForeignKey(
@@ -407,20 +407,20 @@ class Course(models.Model):
     def find_sections(self):
         # when all but the course code is the same ?
         # filter all courses that have the same <subj>,<code>, <term>
-        print(
-            "in get sections",
-            self.course_subject,
-            self.course_number,
-            self.course_term,
-            self.year,
-        )
+        # print(
+        #     "in get sections",
+        #     self.course_subject,
+        #     self.course_number,
+        #     self.course_term,
+        #     self.year,
+        # )
         courses = Course.objects.filter(
             Q(course_subject=self.course_subject)
             & Q(course_number=self.course_number)
             & Q(course_term=self.course_term)
             & Q(year=self.year)
         ).exclude(course_code=self.course_code)
-        print("sections", courses)
+        # print("sections", courses)
         return courses
 
     def srs_format(self):

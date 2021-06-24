@@ -10,9 +10,12 @@ from canvas import api as canvas_api
 from datawarehouse import datawarehouse
 
 from celery import task
+
+from canvas import api as canvas_api
 from course import utils
 from course.models import CanvasSite, Course, Request, User
 from course.serializers import RequestSerializer
+from datawarehouse import datawarehouse
 
 
 @task()

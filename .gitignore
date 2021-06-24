@@ -1,7 +1,6 @@
 *.sqlite3
 
-*.log
-/logs
+**/*.log*
 
 venv/
 
@@ -14,6 +13,6 @@ ACP/data/
 .python-version
 
 .idea/
-.DS_Store
+**/.DS_Store
 
 .flake8
