@@ -4,16 +4,16 @@ import sys
 import time
 from datetime import datetime
 
-import canvas.api as canvas_api
 import requests
+from celery import task
+
+import canvas.api as canvas_api
 from canvas import api as canvas_api
 from canvas.api import TOKEN_PROD, TOKEN_TEST, URL_PROD, URL_TEST
-from datawarehouse import datawarehouse
-
-from celery import task
 from course import utils
 from course.models import CanvasSite, Course, Request, User
 from course.serializers import RequestSerializer
+from datawarehouse import datawarehouse
 
 
 @task()
