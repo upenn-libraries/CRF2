@@ -3,16 +3,11 @@ import logging
 import sys
 from configparser import ConfigParser
 
-from django.core.management.base import BaseCommand
-
 from course.models import Activity, Course, School, Subject, User
 from course.utils import find_or_create_user
+from django.core.management.base import BaseCommand
 from OpenData.library import OpenData
 
-# https://realpython.com/python-logging/
-
-
-# validate_pennkey(pennkey)
 config = ConfigParser()
 config.read("config/config.ini")
 
@@ -56,36 +51,24 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             "-l", "--localstore", action="store_true", help="pull from Local Store"
-        )  # not
-
-        # parser.add_argument('-p', '--prefix', type=str, help='Define a
-        # username prefix')
-        # parser.add_argument('-a', '--admin', action='store_true', help='Create
-        # an admin account')
-        # parser.add_argument('-c', '--courseware', action='store_true',
-        # help='Quick add Courseware Support team as Admins')
-
-        # Need to check to see if updates need to be done
-        #
+        )
 
     def handle(self, *args, **kwargs):
-        # logging.basicConfig(filename='course_add.log', format='%(name)s -
-        # %(levelname)s - %(message)s')
-        # courseware = kwargs['courseware']
+        print(") Adding courses...")
+
         opendata = kwargs["opendata"]
         year_term = kwargs["term"]
         year = year_term[:-1]
         term = year_term[-1]
+
         if opendata:
             domain = config.get("opendata", "domain")
-            id = config.get("opendata", "id")
+            open_data_id = config.get("opendata", "id")
             key = config.get("opendata", "key")
-            print(domain, id, key)
-            OData = OpenData(base_url=domain, id=id, key=key)
-            # saved for special lookups
-            OData_lookup = OpenData(base_url=domain, id=id, key=key)
+            print(domain, open_data_id, key)
+            open_data_connection = OpenData(base_url=domain, id=open_data_id, key=key)
 
-            data = OData.get_courses_by_term(year_term)
+            data = open_data_connection.get_courses_by_term(year_term)
             print("data", data)
             page = 1
 
@@ -95,13 +78,11 @@ class Command(BaseCommand):
                 if data == "ERROR":
                     print("ERROR")
                     sys.exit()
-                # sometimes the data passed back can be a single course and in
-                # that case it should be put in a list
+
                 if isinstance(data, dict):
                     data = [data]
 
                 for datum in data:
-                    # print("datum",datum)
                     datum["section_id"] = datum["section_id"].replace(" ", "")
                     datum["crosslist_primary"] = datum["crosslist_primary"].replace(
                         " ", ""
@@ -111,12 +92,12 @@ class Command(BaseCommand):
                         subject = Subject.objects.get(
                             abbreviation=datum["course_department"]
                         )
-                    except:
+                    except Exception:
                         logging.getLogger("error_logger").error(
                             "couldnt find subject %s ", datum["course_department"]
                         )
                         print("trouble finding subject: ", datum["course_department"])
-                        school_code = OData_lookup.find_school_by_subj(
+                        school_code = open_data_connection.find_school_by_subj(
                             datum["course_department"]
                         )
                         school = School.objects.get(opendata_abbr=school_code)
@@ -130,12 +111,14 @@ class Command(BaseCommand):
                         p_subj = datum["crosslist_primary"][:-6]
                         try:
                             primary_subject = Subject.objects.get(abbreviation=p_subj)
-                        except:
+                        except Exception:
                             logging.getLogger("error_logger").error(
                                 "couldnt find subject %s ", p_subj
                             )
                             print("trouble finding primary subject: ", p_subj)
-                            school_code = OData_lookup.find_school_by_subj(p_subj)
+                            school_code = open_data_connection.find_school_by_subj(
+                                p_subj
+                            )
                             school = School.objects.get(opendata_abbr=school_code)
                             primary_subject = Subject.objects.create(
                                 abbreviation=p_subj,
@@ -149,7 +132,7 @@ class Command(BaseCommand):
                     school = primary_subject.schools
                     try:
                         activity = Activity.objects.get(abbr=datum["activity"])
-                    except:
+                    except Exception:
                         logging.getLogger("error_logger").error(
                             "couldnt find activity %s ", datum["activity"]
                         )
@@ -158,7 +141,7 @@ class Command(BaseCommand):
                         )
                     try:
                         course = Course.objects.create(
-                            owner=User.objects.get(username="mfhodges"),
+                            owner=User.objects.get(username="benrosen"),
                             course_term=term,
                             course_activity=activity,
                             course_code=datum["section_id"] + year_term,
@@ -178,13 +161,12 @@ class Command(BaseCommand):
                                 print("instructor", instructor)
                                 try:
                                     found = find_or_create_user(instructor["penn_id"])
-                                    # print("we are waiting!!!!")
                                     print("found", found)
                                     if found:
                                         instructors += [found]
                                     else:
                                         print("we need to log here")
-                                except:
+                                except Exception:
                                     print("sad")
                                     logging.getLogger("error_logger").error(
                                         "%s (%s) not found",
@@ -200,14 +182,10 @@ class Command(BaseCommand):
                         ).first()
                         if update_course:
                             print("already exists: ", datum["section_id"] + year_term)
-                            # lets check for Updates
-                            if datum["is_cancelled"]:  # canceled course ? lets delete
+                            if datum["is_cancelled"]:
                                 update_course.delete()
                             else:
                                 update_course.name = datum["course_title"]
-                                #
-                                # SHOULD HANDLE OTHER UPDATES
-                                #
                                 if (
                                     update_course.course_primary_subject
                                     != datum["crosslist_primary"][:-6]
@@ -220,8 +198,7 @@ class Command(BaseCommand):
                                                 ]
                                             )
                                         )
-                                    except:
-                                        # subject doesnt exist
+                                    except Exception:
                                         pass
                                 update_course.instructors.clear()
                                 if datum["instructors"]:
@@ -232,13 +209,12 @@ class Command(BaseCommand):
                                             found = find_or_create_user(
                                                 instructor["penn_id"]
                                             )
-                                            # print("we are waiting!!!!")
                                             print("found", found)
                                             if found:
                                                 instructors += [found]
                                             else:
                                                 print("we need to log here")
-                                        except:
+                                        except Exception:
                                             print("sad")
                                             logging.getLogger("error_logger").error(
                                                 "%s (%s) not found",
@@ -249,26 +225,18 @@ class Command(BaseCommand):
                                     update_course.instructors.set(instructors)
                                 update_course.save()
 
-                        else:  # course doesnt already exist
+                        else:
                             print(type(e), e.__cause__)
                             logging.getLogger("error_logger").error(
                                 "couldnt add course %s ", datum["section_id"]
                             )
 
                 page += 1
-                # end of for loop
-                # data =None
-                data = OData.next_page()
-
-        # except:
-        #        print("oh no?")
-        #        print(data)
+                data = open_data_connection.next_page()
 
         else:
             with open("OpenData/OpenData.json") as json_file:
                 data = json.load(json_file)
-                # print(data.keys()) =dict_keys(['activity_map', 'departments',
-                # 'programs', 'school_subj_map'])
                 """
                 steps
                 1. iterate through school subj mapping and take each school abbr "AS"
@@ -281,14 +249,11 @@ class Command(BaseCommand):
                     print(school, subjs)
                     try:
                         this_school = School.objects.get(opendata_abbr=school)
-                    except:
-                        # make this a log
+                    except Exception:
                         print("couldnt find school " + school)
 
-                    #
                     print(subjs)
                     for subj in subjs:
-                        # need to see if exists
                         if not Subject.objects.filter(abbreviation=subj).exists():
                             try:
                                 subj_name = data["departments"][subj]
@@ -298,7 +263,7 @@ class Command(BaseCommand):
                                     visible=True,
                                     schools=this_school,
                                 )
-                            except:
+                            except Exception:
 
                                 print("couldnt find subj in departments: " + subj)
                                 Subject.objects.create(
@@ -309,4 +274,3 @@ class Command(BaseCommand):
                                 )
                         else:
                             pass
-                            # print("subject already exists: "+ subj)
