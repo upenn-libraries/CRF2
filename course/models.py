@@ -347,13 +347,13 @@ class Course(models.Model):
         else:
             return None
 
-    # def get_subjects(self):
-    #     return self.course_subject.abbreviation
-    #     cross_listed = self.crosslisted
-    #     print(cross_listed)
-    #     if cross_listed == None:
-    #         return self.course_subject.abbreviation
-    #     return ",\n".join([sub.abbreviation for sub in cross_listed])
+    def get_subjects(self):
+        return self.course_subject.abbreviation
+        cross_listed = self.crosslisted
+        print(cross_listed)
+        if cross_listed == None:
+            return self.course_subject.abbreviation
+        return ",\n".join([sub.abbreviation for sub in cross_listed])
 
     def get_schools(self):
         return self.course_schools
