@@ -11,11 +11,11 @@ TOKEN_PROD = config.get("canvas", "prod_key")
 TOKEN_TEST = config.get("canvas", "test_key")
 
 
-def gen_header(test):
+def gen_header(test=False):
     return {"Authorization": f"Bearer {TOKEN_TEST if test else TOKEN_PROD}"}
 
 
-def get_canvas(test):
+def get_canvas(test=False):
     return Canvas(
         URL_PROD if not test else URL_TEST, TOKEN_PROD if not test else TOKEN_TEST
     )
