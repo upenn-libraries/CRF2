@@ -439,7 +439,7 @@ def create_canvas_site(test=False):
 
                 for event in events:
                     if (
-                        event.location_name == "Zoom Online Meeting"
+                        "zoom" in event.location_name.lower()
                         or "zoom" in event.description.lower()
                         or "zoom" in event.title.lower()
                     ):
