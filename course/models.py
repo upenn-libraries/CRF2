@@ -197,69 +197,35 @@ class CourseManager(models.Manager):
 
 
 class Course(models.Model):
-
     SPRING = "A"
     SUMMER = "B"
     FALL = "C"
 
-    # dont change these variable names -- used in views.py
     TERM_CHOICES = ((SPRING, "Spring"), (SUMMER, "Summer"), (FALL, "Fall"))
 
-    created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
-    # id = models.CharField(max_length=250) # this is a number
-
-    owner = models.ForeignKey(
-        "auth.User", related_name="created", on_delete=models.CASCADE
-    )  # this is who edited it
-
-    instructors = models.ManyToManyField(
-        User, related_name="courses", blank=True
-    )  # should be allowed to be null --> "STAFF"
-    course_term = models.CharField(
-        max_length=1,
-        choices=TERM_CHOICES,
-    )  # self.course_term would == self.SPRING || self.FALL || self.SUMMER
     course_activity = models.ForeignKey(
         Activity, related_name="courses", on_delete=models.CASCADE
     )
     course_code = models.CharField(
         max_length=150, unique=True, primary_key=True, editable=False
-    )  # unique and primary_key means that is the lookup_field
-    course_subject = models.ForeignKey(
-        Subject, on_delete=models.CASCADE, related_name="courses"
-    )  # one to many
+    )
+    course_name = models.CharField(max_length=250)
+    course_number = models.CharField(max_length=4, blank=False)
     course_primary_subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     course_schools = models.ForeignKey(
         School, related_name="courses", on_delete=models.CASCADE
-    )  # one to many
-    course_number = models.CharField(max_length=4, blank=False)
-    course_section = models.CharField(
-        max_length=4, blank=False
-    )  # can courses not have associated sections?
-    course_name = models.CharField(
-        max_length=250
-    )  # Human Readable Name i.e. Late Antique Arts
-    year = models.CharField(max_length=4, blank=False)
-    primary_crosslist = models.CharField(max_length=20, default="", blank=True)
+    )
+    course_section = models.CharField(max_length=4, blank=False)
+    course_subject = models.ForeignKey(
+        Subject, on_delete=models.CASCADE, related_name="courses"
+    )
+    course_term = models.CharField(
+        max_length=1,
+        choices=TERM_CHOICES,
+    )
+    created = models.DateTimeField(auto_now_add=True)
     crosslisted = models.ManyToManyField(
         "self", blank=True, symmetrical=True, default=None
-    )
-    sections = models.ManyToManyField(
-        "self", blank=True, symmetrical=True, default=None
-    )
-    requested = models.BooleanField(default=False)  # False -> not requested
-    # section_request = models.ForeignKey('course.Request',on_delete=models.CASCADE, related_name="additional_sections",default=None,null=True)
-    requested_override = models.BooleanField(
-        default=False
-    )  # this field is just for certain cases !
-    multisection_request = models.ForeignKey(
-        "course.Request",
-        on_delete=models.SET_NULL,
-        related_name="additional_sections",
-        default=None,
-        blank=True,
-        null=True,
     )
     crosslisted_request = models.ForeignKey(
         "course.Request",
@@ -269,6 +235,26 @@ class Course(models.Model):
         blank=True,
         null=True,
     )
+    instructors = models.ManyToManyField(User, related_name="courses", blank=True)
+    multisection_request = models.ForeignKey(
+        "course.Request",
+        on_delete=models.SET_NULL,
+        related_name="additional_sections",
+        default=None,
+        blank=True,
+        null=True,
+    )
+    owner = models.ForeignKey(
+        "auth.User", related_name="created", on_delete=models.CASCADE
+    )
+    primary_crosslist = models.CharField(max_length=20, default="", blank=True)
+    requested = models.BooleanField(default=False)
+    requested_override = models.BooleanField(default=False)
+    sections = models.ManyToManyField(
+        "self", blank=True, symmetrical=True, default=None
+    )
+    updated = models.DateTimeField(auto_now=True)
+    year = models.CharField(max_length=4, blank=False)
 
     class Meta:
         ordering = (
@@ -280,28 +266,24 @@ class Course(models.Model):
         if self.requested_override == True:
             return True
         else:
-            # check if the course has a direct request
             try:
                 exists = self.request
-                # print("request obj",exists)
                 return True
             except:
-                # check if the course has been tied into other requests
 
                 exists = self.multisection_request
                 exists_cross = self.crosslisted_request
-                # print(" multi section request obj",exists)
-                if exists or exists_cross:  # check that its not none
+                if exists or exists_cross:
                     return True
                 else:
                     return False
                 return False
-        # print("we hit base case that i havent planned for")
 
-    ### wrong logic -- can have diff numbers ###
+    def set_requested(self, requested):
+        self.requested = requested
+        self.save()
+
     def find_crosslisted(self):
-        # crosslisted courses hace the same <number><section>_<year><term> -- the difference should be the subject but they should also each have the same primary subject!
-        # check that there is a primarycrosslisting
         cross_courses = Course.objects.filter(
             Q(course_primary_subject=self.course_primary_subject)
             & Q(course_number=self.course_number)
@@ -309,15 +291,11 @@ class Course(models.Model):
             & Q(course_term=self.course_term)
             & Q(year=self.year)
         )
-        # print("found course", cross_courses)
         for course in cross_courses:
             self.crosslisted.add(course)
             self.save()
 
-    ## doesnt work ##
     def update_crosslists(self):
-        # makes sure that request override is common
-        # makes sure that request object is common ( by setting crosslisted_request)
         cross_courses = Course.objects.filter(
             Q(course_primary_subject=self.course_primary_subject)
             & Q(course_number=self.course_number)
@@ -326,20 +304,18 @@ class Course(models.Model):
             & Q(year=self.year)
         )
         for course in cross_courses:
-
             course.requested_override = self.requested_override
+
         try:
-            r = self.request
+            request = self.request
+
             for course in cross_courses:
-                course.crosslisted_request = r
-        except:
-            pass  # no request
+                course.crosslisted_request = request
+
+        except Exception as error:
+            print(error)
 
     def save(self, *args, **kwargs):
-        """
-        some text
-        """
-        # <subject><course_number><section><year><term>
         self.course_code = (
             self.course_subject.abbreviation
             + self.course_number
@@ -347,28 +323,18 @@ class Course(models.Model):
             + self.year
             + self.course_term
         )
-        # print("saving Course instance")
-        # print("self.pk",self.pk)
-        if self._state.adding == True:  # creating
-            # ?#self.requested = self.find_requested()
-            # ?#super().save(*args,**kwargs) #super(Course, self)
-            # ?#self.sections.set(self.find_sections())
-            # ?#self.find_crosslisted()
-            super().save(*args, **kwargs)
-            # here is where you do the updating of cross listed instances
-        else:  # updating
 
+        if self._state.adding == True:
+            super().save(*args, **kwargs)
+        else:
             self.sections.set(self.find_sections())
             self.requested = self.find_requested()
             self.update_crosslists()
-            super().save(*args, **kwargs)  # super(Course, self)
-
-    # def set_crosslistings(self):
+            super().save(*args, **kwargs)
 
     def get_request(self):
         try:
             requestinfo = self.request
-            print("found request info", requestinfo)
             return requestinfo
         except Request.DoesNotExist:
             print("Request.DoesNotExist!")
@@ -380,52 +346,36 @@ class Course(models.Model):
         else:
             return None
 
-        # return error
-
-    # NOT IN USE AND NEEDS TO BE TESTED
     def get_subjects(self):
-        # this need to be
         return self.course_subject.abbreviation
         cross_listed = self.crosslisted
         print(cross_listed)
         if cross_listed == None:
             return self.course_subject.abbreviation
-        # should get all crosslisted and the
         return ",\n".join([sub.abbreviation for sub in cross_listed])
 
     def get_schools(self):
         return self.course_schools
-        # return ",\n".join([sch.abbreviation for sch in self.course_schools.all()])
 
     def get_instructors(self):
-        # check if blank?
-        # print("lets go to funkie town",self.instructors.all(), )
         if not self.instructors.all().exists():
             return "STAFF"
+
         return ",\n".join([inst.username for inst in self.instructors.all()])
 
     def find_sections(self):
-        # when all but the course code is the same ?
-        # filter all courses that have the same <subj>,<code>, <term>
-        # print(
-        #     "in get sections",
-        #     self.course_subject,
-        #     self.course_number,
-        #     self.course_term,
-        #     self.year,
-        # )
         courses = Course.objects.filter(
             Q(course_subject=self.course_subject)
             & Q(course_number=self.course_number)
             & Q(course_term=self.course_term)
             & Q(year=self.year)
         ).exclude(course_code=self.course_code)
-        # print("sections", courses)
+
         return courses
 
     def srs_format(self):
         term = self.year + self.course_term
-        # print(course['course_section'])
+
         return "%s-%s-%s %s" % (
             self.course_subject.abbreviation,
             self.course_number,
@@ -436,18 +386,21 @@ class Course(models.Model):
     def srs_format_primary(self, sis_id=True):
         term = self.year + self.course_term
         pc = self.primary_crosslist
+
         if pc:
             term = pc[-5:]
             section = pc[:-5][-3:]
             number = pc[:-5][:-3][-3:]
             subj = pc[:-5][:-6]
+
             if sis_id:
                 srs_pc = "%s-%s-%s %s" % (subj, number, section, term)
+
                 return srs_pc
             else:
                 srs_pc = "%s %s-%s %s" % (subj, number, section, term)
-                return srs_pc
 
+                return srs_pc
         else:
             return self.srs_format()
 
@@ -472,19 +425,8 @@ class Course(models.Model):
             ]
         )
 
-        # return self.course_code
-
     objects = models.Manager()
     CourseManager = CourseManager()
-
-    # def get_absolute_url(self):
-    #    """
-    #    get_absolute_url should return a string of the url that is
-    #    associated with that particular model instance. This is
-    #    especially useful in templates and redirect responses.
-    #    """
-    #    # determine which view?
-    #    return reverse('vegetable', pks={pk: self.pk})
 
 
 class Notice(models.Model):
