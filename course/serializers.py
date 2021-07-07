@@ -109,7 +109,6 @@ class CourseSerializer(
     def get_sections(self, obj):
         # when all but the course code is the same ?
         # filter all courses that have the same <subj>,<code>, <term>
-        print("in get sections")
         courses = obj.sections.all()
         result = []
         for course in courses:

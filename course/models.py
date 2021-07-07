@@ -335,7 +335,6 @@ class Course(models.Model):
     def get_request(self):
         try:
             requestinfo = self.request
-            print("found request info", requestinfo)
             return requestinfo
         except Request.DoesNotExist:
             print("Request.DoesNotExist!")

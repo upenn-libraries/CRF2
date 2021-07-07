@@ -4,24 +4,20 @@ import sys
 import time
 from datetime import datetime
 
-import requests
+from canvasapi.tab import Tab
+from celery import task
+
 from canvas.api import (
-    URL_PROD,
-    URL_TEST,
     find_account,
     find_term_id,
-    gen_header,
     get_canvas,
     get_user_by_sis,
     mycreate_user,
 )
-from canvasapi.tab import Tab
-from datawarehouse import datawarehouse
-
-from celery import task
 from course import utils
 from course.models import CanvasSite, Course, Request, User
 from course.serializers import RequestSerializer
+from datawarehouse import datawarehouse
 
 
 @task()
@@ -141,61 +137,8 @@ def check_for_account(pennkey):
             pass
 
 
-def get_calendar_events(course, test=False):
-    header = gen_header(test)
-    course_string = f"course_{course}"
-
-    try:
-        response = requests.get(
-            f"{URL_TEST if test else URL_PROD}/api/v1/calendar_events",
-            params={"context_codes[]": course_string, "all_events": True},
-            headers=header,
-        )
-        return response.json()
-    except Exception as error:
-        print(f"ERROR: {error}")
-
-
-def find_zoom_events(events):
-    zoom_events = list()
-
-    for event in events:
-        if (
-            event["location_name"] == "Zoom Online Meeting"
-            or "zoom" in event["description"]
-        ):
-            zoom_events.append(event)
-    return zoom_events
-
-
-def delete_zoom_event(event_id, test=False):
-    header = gen_header(test)
-
-    try:
-        response = requests.delete(
-            f"{URL_TEST if test else URL_PROD}/api/v1/calendar_events/{event_id}",
-            headers=header,
-        )
-        return response.json()
-    except Exception as error:
-        print(f"ERROR: {error}")
-
-
 @task()
 def create_canvas_site(test=False):
-    """
-    1. set request to in process
-    2. Create course in canvas (check that is doesnt exist first)
-    2a. Crosslist
-    2b. add sections
-    3. enroll faculty and additional enrollments (check that they have accounts first)
-    4. Configure reserves
-    5. Content Migration
-    6. Create CanvasSite Object and link to Request (set canvas_instance_id)
-    7. Set request to Complete
-    8. Notify with email (not completed)
-    """
-
     print(") Creating Canvas sites for requested courses...")
 
     requested_courses = Request.objects.filter(status="APPROVED")
@@ -210,18 +153,12 @@ def create_canvas_site(test=False):
         serialized = RequestSerializer(request)
         additional_sections = []
 
-        # Step 1. Set request to IN_PROCESS
-        print("STEP 1")
-
         request.status = "IN_PROCESS"
         request.save()
 
         course_requested = request.course_requested
 
-        print(f"COURSE REQUESTED: {course_requested}")
-
-        # Step 2. Create course in canvas
-        print("STEP 2")
+        print(f") Creating Canvas site for {course_requested}...")
 
         account = find_account(
             course_requested.course_schools.canvas_subaccount, test=test
@@ -274,6 +211,7 @@ def create_canvas_site(test=False):
             }
 
             already_exists = False
+
             try:
                 canvas_course = account.create_course(course=course)
             except Exception:
@@ -288,7 +226,7 @@ def create_canvas_site(test=False):
                         "course site creation failed--check if it already exists,"
                     )
                     request.save()
-                    print(f"ERROR: failed to create course ({error})")
+                    print(f"\t- ERROR: failed to create site ({error})")
                     return
 
             try:
@@ -318,11 +256,11 @@ def create_canvas_site(test=False):
                     request.process_notes += "failed to create main section,"
                     request.process_notes += sys.exc_info()[0]
                     request.save()
-                    print(f"ERROR: failed to add section ({error})")
+                    print(f"\t- ERROR: failed to add section ({error})")
                     return
         else:
-            request.process_notes += "failed to locate Canvas Account in Canvas,"
-            print("ERROR: failed to locate Canvas Account")
+            request.process_notes += "failed to locate Canvas Account,"
+            print("\t- ERROR: failed to locate Canvas Account")
             return
 
         if request.title_override:
@@ -356,11 +294,8 @@ def create_canvas_site(test=False):
             except Exception as error:
                 request.process_notes += "failed to create section,"
                 request.save()
-                print(f"ERROR: failed to create section ({error})")
+                print(f"\t- ERROR: failed to create section ({error})")
                 return
-
-        # Step 3. enroll faculty and additional enrollments
-        print("STEP 3")
 
         enrollment_types = {
             "INST": "TeacherEnrollment",
@@ -457,9 +392,6 @@ def create_canvas_site(test=False):
                 except Exception:
                     request.process_notes += f"failed to add user: {user},"
 
-        # Step 4. Configure reserves/libguide
-        print("STEP 4")
-
         if serialized.data["reserves"]:
             try:
                 tab = Tab(
@@ -476,12 +408,12 @@ def create_canvas_site(test=False):
             except Exception:
                 request.process_notes += "failed to try to configure ARES,"
 
-        # Step 5. Content Migration
-        print("STEP 5")
-
         if serialized.data["copy_from_course"]:
             try:
-                print(f"COPY FROM COURSE: {serialized.data['copy_from_course']}")
+                print(
+                    "\t* Copying course data from course id"
+                    f" {serialized.data['copy_from_course']}..."
+                )
                 source_course_id = serialized.data["copy_from_course"]
                 content_migration = canvas_course.create_content_migration(
                     migration_type="course_copy_importer",
@@ -492,43 +424,55 @@ def create_canvas_site(test=False):
                     content_migration.get_progress == "queued"
                     or content_migration.get_progress == "running"
                 ):
-                    print("MIGRATION RUNNING...")
+                    print("\t* Migration running...")
                     time.sleep(8)
 
-                print("MIGRATION COMPLETE")
-                print("Deleting Zoom events...")
+                print("\t- MIGRATION COMPLETE")
+                print("\t* Deleting Zoom events...")
 
-                events = get_calendar_events(canvas_course.id, test)
-                print(events)
-                zoom_events = find_zoom_events(events)
                 canvas = get_canvas(test)
+                course_string = f"course_{canvas_course.id}"
+                events = canvas.get_calendar_events(
+                    context_codes=[course_string], all_events=True
+                )
+                zoom_events = list()
 
-                for event in zoom_events:
-                    delete_zoom_event(event["id"], test)
+                for event in events:
+                    if (
+                        event.location_name == "Zoom Online Meeting"
+                        or "zoom" in event.description.lower()
+                        or "zoom" in event.title.lower()
+                    ):
+                        zoom_events.append(event.id)
+
+                for event_id in zoom_events:
+                    event = canvas.get_calendar_event(event_id)
+                    deleted = event.delete(
+                        cancel_reason=(
+                            "Zoom event was copied from a previous term and no longer"
+                            " relevant"
+                        )
+                    )
+                    print(f"\t- Event '{deleted}' deleted.")
 
             except Exception as error:
-                print("ERROR: ", error)
-
-        # Step 6. Create CanvasSite Object and link to Request
-        print("STEP 6")
+                print(f"\t- ERROR: {error}")
 
         instructors = canvas_course.get_enrollments(type="TeacherEnrollment")._elements
-        _canvas_id = canvas_course.id
-        _request_instance = request
-        _name = canvas_course.name
-        _sis_course_id = canvas_course.sis_course_id
-        _workflow_state = canvas_course.workflow_state
+        canvas_id = canvas_course.id
+        request_instance = request
+        name = canvas_course.name
+        sis_course_id = canvas_course.sis_course_id
+        workflow_state = canvas_course.workflow_state
         site = CanvasSite.objects.update_or_create(
-            canvas_id=_canvas_id,
+            canvas_id=canvas_id,
             defaults={
-                "request_instance": _request_instance,
-                "name": _name,
-                "sis_course_id": _sis_course_id,
-                "workflow_state": _workflow_state,
+                "request_instance": request_instance,
+                "name": name,
+                "sis_course_id": sis_course_id,
+                "workflow_state": workflow_state,
             },
         )[0]
-        print(site)
-
         request.canvas_instance = site
 
         for instructor in instructors:
@@ -538,10 +482,8 @@ def create_canvas_site(test=False):
             except Exception:
                 pass
 
-        # Step 7. Set request to Complete
-        print("STEP 7")
-
         request.status = "COMPLETED"
         request.save()
+        print(f"- Canvas site successfully created: {site}.")
 
     print("FINISHED")
