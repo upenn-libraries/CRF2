@@ -5,43 +5,41 @@ from canvasapi.exceptions import CanvasException
 
 config = ConfigParser()
 config.read("config/config.ini")
-domain = config.get("canvas", "prod_env")
-key = config.get("canvas", "prod_key")
-headers = {"Authorization": "Bearer %s" % (key)}
+URL_PROD = config.get("canvas", "prod_env")
+URL_TEST = config.get("canvas", "test_env")
+TOKEN_PROD = config.get("canvas", "prod_key")
+TOKEN_TEST = config.get("canvas", "test_key")
 
 
-# Canvas API URL
-API_URL = domain
-# Canvas API key
-API_KEY = key
+def gen_header(test=False):
+    return {"Authorization": f"Bearer {TOKEN_TEST if test else TOKEN_PROD}"}
+
+
+def get_canvas(test=False):
+    return Canvas(
+        URL_PROD if not test else URL_TEST, TOKEN_PROD if not test else TOKEN_TEST
+    )
 
 
 # --------------- RETREIVEING FROM CANVAS ------------------
 
 
-def get_user_by_sis(login_id):
-    # login_id == pennkey
-    # https://canvas.instructure.com/doc/api/users.html
-    # Initialize a new Canvas object
-    canvas = Canvas(API_URL, API_KEY)
-    # canvas.get_user(123)
+def get_user_by_sis(login_id, test=False):
+    canvas = get_canvas(test)
+
     try:
         login_id_user = canvas.get_user(login_id, "sis_login_id")
-        # print(login_id_user, login_id_user.attributes)
-        # print(login_id_user.get_courses()[0].attributes)
         return login_id_user
-    except CanvasException as e:
-        print("CanvasException: ", e)
+    except CanvasException as error:
+        print("CanvasException: ", error)
         return None
 
 
-# need to test this
-def mycreate_user(pennkey, pennid, email, fullname):
-    # 1. create account with SIS_ID speciified
-    # canvas = Canvas(API_URL, API_KEY)
+def mycreate_user(pennkey, pennid, email, fullname, test=False):
     pseudonym = {"sis_user_id": pennid, "unique_id": pennkey}
+
     try:
-        account = find_account(96678)
+        account = find_account(96678, test=test)
         user = account.create_user(pseudonym, user={"name": fullname})
         user.edit(user={"email": email})
         return user
@@ -67,7 +65,7 @@ def find_in_canvas(sis_section_id):
     # (line 1048)
     # https://github.com/ucfopen/canvasapi/blob/49ddf3d12c411de25121a8a04b99a0b62b6a1de4/canvasapi/canvas.py
 
-    canvas = Canvas(API_URL, API_KEY)
+    canvas = Canvas(URL_PROD, TOKEN_PROD)
     try:
         section = canvas.get_section(sis_section_id, use_sis_id=True)  # , **kwargs)
     except CanvasException as e:
@@ -78,25 +76,26 @@ def find_in_canvas(sis_section_id):
     return section
 
 
-def find_account(account_id):
-    canvas = Canvas(API_URL, API_KEY)
+def find_account(account_id, test=False):
+    canvas = get_canvas(test)
+
     try:
         account = canvas.get_account(account_id)
         return account
-    except CanvasException as e:
-        print("CanvasException: ", e)
+    except CanvasException as error:
+        print("CanvasException: ", error)
         return None
 
 
-def find_term_id(account_id, sis_term_id):
-    # term= 2019C
-    # https://canvas.upenn.edu/api/v1/accounts/96678/terms/sis_term_id:2019C -- works
-    canvas = Canvas(API_URL, API_KEY)
+def find_term_id(account_id, sis_term_id, test=False):
+    canvas = get_canvas(test)
     account = canvas.get_account(account_id)
+
     if account:
         response = account._requester.request(
-            "GET", "accounts/{}/terms/sis_term_id:{}".format(account_id, sis_term_id)
+            "GET", f"accounts/{account_id}/terms/sis_term_id:{sis_term_id}"
         )
+
         if response.status_code == 200:
             return response.json()["id"]
         else:
