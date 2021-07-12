@@ -399,13 +399,15 @@ def create_canvas_site(test=False):
                     {
                         "course_id": canvas_course.id,
                         "id": "context_external_tool_139969",
+                        "label": "Course Materials @ Penn Libraries",
                     },
                 )
                 tab.update(hidden=False)
 
                 if tab.visibility != "public":
                     request.process_notes += "failed to configure ARES,"
-            except Exception:
+            except Exception as error:
+                print(f"\t- ERROR: {error}")
                 request.process_notes += "failed to try to configure ARES,"
 
         if serialized.data["copy_from_course"]:
