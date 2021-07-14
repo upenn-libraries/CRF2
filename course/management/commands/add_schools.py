@@ -162,6 +162,6 @@ class Command(BaseCommand):
                 else:
                     print(f"{message} Updated {school['name']}.")
             except Exception as error:
-                print(f"{message} - ERROR: {error}")
+                print(f"{message} - ERROR: {error} ({school})")
 
         print("FINISHED")

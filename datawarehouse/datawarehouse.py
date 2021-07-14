@@ -43,10 +43,12 @@ def get_open_data():
 def roman_title(title):
     roman_numeral = findall(" [MDCLXVI]{2,}", title)
     title = capwords(title)
+
     if roman_numeral:
         title_case = capwords(roman_numeral[-1])
         upper_case = roman_numeral[-1].upper()
         title = title.replace(title_case, upper_case)
+
     return title
 
 
